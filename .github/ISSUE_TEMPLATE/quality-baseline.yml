@@ -1,0 +1,53 @@
+name: Quality baseline
+description: Register a quality gate failure confirmed on the remote main, without attributing it to a new change.
+title: "[baseline] "
+labels:
+  - documentation
+body:
+  - type: dropdown
+    id: gate
+    attributes:
+      label: Gate
+      description: Which gate is represented by this baseline record?
+      options:
+        - Lint
+        - Typecheck
+        - Tests
+        - Build
+        - Multiple gates
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Provide the exact commands and results from a clean checkout of the remote main.
+      placeholder: |
+        <comando de lint> — <resultado resumido>
+        <comando de testes> — <resultado resumido>
+        <comando de typecheck> — <resultado resumido>
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Operational impact
+      description: Explain what is known about the impact and what remains uncertain.
+    validations:
+      required: true
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Remediation plan
+      description: Describe the follow-up work or the owner needed to retire this baseline.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Classification
+      options:
+        - label: The same result was reproduced on a clean checkout of the remote main.
+          required: true
+        - label: This record does not approve bypassing future regressions in the same area.
+          required: true

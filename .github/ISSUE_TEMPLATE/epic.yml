@@ -1,0 +1,42 @@
+name: Epic
+description: Group several independent deliveries under one theme. Each item becomes a child issue.
+title: "[epic] "
+labels:
+  - type:epic
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Explain the current behavior, the user need and why the items belong to the same theme.
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: Describe the expected behavior and relevant constraints for the whole theme.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List the conditions that must be true for the epic to be complete.
+    validations:
+      required: true
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Checklist de itens
+      description: One checklist line per child issue, in the form "- [ ] #<número> — <título>". Items not yet created use "- [ ] <título provisório>".
+      placeholder: |
+        - [ ] #<número> — <título do item 1>
+        - [ ] <título provisório do item 2>
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fora do épico
+      description: Related items that do not belong to this theme. List them as separate issues.

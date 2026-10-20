@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a behavior that differs from the expected behavior.
+title: "[bug] "
+labels:
+  - type:bug
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Describe what happens, who is affected and where it was observed.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps that reproduce the behavior on the current remote main.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: What happens now, including error messages (without secrets or personal data).
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Verifiable conditions that show the bug is fixed.
+    validations:
+      required: true
