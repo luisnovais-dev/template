@@ -52,6 +52,8 @@ Os comandos de verificação do projeto estão na seção Configuração de [`do
 
 Toda mudança de funcionalidade atualiza a documentação existente, ou cria a seção que falta, antes de a PR ser aberta.
 
+O README e a descrição do repositório no GitHub acompanham o crescimento do projeto. Quando uma mudança alterar o que o projeto faz, para quem ele serve ou o seu status, a linha de descrição do README (e a descrição do repositório no GitHub) é atualizada na mesma PR.
+
 ## Mudanças de interface
 
 Mudanças de interface (UX/UI) passam por validação visual antes de concluir a auditoria (ver [`docs/PROCESSO.md`](docs/PROCESSO.md#validação-visual)).

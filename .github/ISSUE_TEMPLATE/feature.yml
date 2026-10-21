@@ -2,7 +2,7 @@ name: Feature request
 description: Propose a user-visible improvement or new capability.
 title: "[feature] "
 labels:
-  - type:enhancement
+  - type:feature
 body:
   - type: textarea
     id: context
