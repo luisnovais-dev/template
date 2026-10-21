@@ -2,7 +2,7 @@ name: Quality baseline
 description: Register a quality gate failure confirmed on the remote main, without attributing it to a new change.
 title: "[baseline] "
 labels:
-  - documentation
+  - type:bug
 body:
   - type: dropdown
     id: gate
