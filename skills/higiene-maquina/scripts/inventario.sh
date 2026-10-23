@@ -64,7 +64,27 @@ GH_USUARIO=""
 if command -v gh >/dev/null 2>&1; then
   GH_USUARIO=$(gh api user --jq .login 2>/dev/null || true)
 fi
-DONOS="${HIGIENE_DONOS:-} $GH_USUARIO"
+# Organizações do usuário também são donos reconhecidos (ex.: onluis-dev).
+GH_ORGS=""
+if [ -n "$GH_USUARIO" ]; then
+  GH_ORGS=$(gh api user/orgs --jq '.[].login' 2>/dev/null | tr '\n' ' ' || true)
+fi
+DONOS="${HIGIENE_DONOS:-} $GH_USUARIO $GH_ORGS"
+
+# O commit existe no GitHub (por exemplo, ponta de uma PR cuja branch remota foi apagada)?
+# Responde SIM, NAO ou INDETERMINADO.
+commit_no_github() {
+  local slug="$1" sha="$2" r
+  if [ -z "$slug" ] || ! command -v gh >/dev/null 2>&1; then
+    echo "INDETERMINADO"; return
+  fi
+  r=$(gh api "repos/$slug/commits/$sha" --jq .sha 2>&1)
+  case "$r" in
+    "$sha") echo "SIM" ;;
+    *"No commit found"*|*"Not Found"*|*"404"*|*"422"*) echo "NAO" ;;
+    *) echo "INDETERMINADO" ;;
+  esac
+}
 
 # Converte a URL de origin em owner/repo do GitHub (vazio se não for GitHub).
 slug_github() {
@@ -158,6 +178,7 @@ for repo in "${UNICOS[@]}"; do
       integrada=0
     fi
     no_remoto=0
+    estado=""
     printf '%s\n' "$REMOTO_VIVO" | grep -q "^$sha$" && no_remoto=1
 
     if [ "$integrada" -eq 0 ]; then
@@ -167,14 +188,24 @@ for repo in "${UNICOS[@]}"; do
       fi
     fi
 
-    if git -C "$repo" worktree list --porcelain | grep -q "^branch refs/heads/$branch$"; then
-      continue   # tratada na seção de worktrees
+    # Branch em uso numa worktree adicional já foi tratada na seção de worktrees.
+    # A branch em uso no checkout principal é classificada aqui, mas nunca como remover.
+    em_worktree=$(git -C "$repo" worktree list --porcelain | awk -v r="$repo" -v b="refs/heads/$branch" '
+      /^worktree /{p=substr($0,10)} /^branch /{ if (substr($0,8)==b && p!=r) print "sim" }')
+    if [ -n "$em_worktree" ]; then
+      continue
+    fi
+    if [ "$branch" = "$(git -C "$repo" symbolic-ref --short -q HEAD)" ] && [ "$integrada" -eq 1 ]; then
+      echo "  REQUER_DECISAO: branch $branch integrada, mas em uso no checkout principal (troque de branch antes de remover)"
+      continue
     fi
 
     if [ "$integrada" -eq 1 ]; then
       echo "  SEGURO_REMOVER: branch $branch integrada (ancestral de origin/main ou PR mesclada), sem worktree"
     elif [ "$no_remoto" -eq 1 ]; then
       echo "  REQUER_DECISAO: branch $branch com ponta publicada e sem PR mesclada (PR: ${estado:-?})"
+    elif [ "$(commit_no_github "$slug" "$sha")" = "SIM" ]; then
+      echo "  REQUER_DECISAO: branch $branch sem PR mesclada, mas o commit $sha já existe no GitHub (nada a resgatar)"
     else
       echo "  RESGATAR: branch $branch com commits ($sha) fora do remoto vivo e sem PR mesclada (PR: ${estado:-INDETERMINADO}). Não remover."
     fi

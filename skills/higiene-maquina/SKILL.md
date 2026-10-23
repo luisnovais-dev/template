@@ -23,11 +23,11 @@ Mostra o estado do que o trabalho com agentes deixou nesta máquina e remove som
    - **SEGURO_REMOVER:** worktree limpa cujo trabalho está integrado (ancestral de `origin/main`, ou PR da branch mesclada por squash), e branch integrada sem worktree.
    - **RESGATAR:** branch com commits fora do remoto vivo e sem PR mesclada. Inclui também o caso em que o GitHub não pôde ser consultado (PR `INDETERMINADO`). **Nunca** é tratada como segura. Confirme com o mantenedor antes de qualquer ação.
    - **ORFAO:** worktree registrada cujo diretório sumiu. Limpe o registro com `git worktree prune` só após confirmação.
-   - **REMOTO_LEGADO:** remote cujo dono não está em `HIGIENE_DONOS` nem é o usuário do `gh`, inclusive o `origin`. Revise para decidir se é um remoto antigo.
+   - **REMOTO_LEGADO:** remote cujo dono não é o usuário do `gh`, nem uma organização dele, nem está em `HIGIENE_DONOS`, inclusive o `origin`. Revise para decidir se é um remoto antigo.
    - **PROGRESSO:** `.agent/` com registro de trabalho. Não é lixo e não é removido por esta skill.
    - **LIXO:** temporário sem trabalho ativo (`_tmp*`, `*.log`, `tmp-verif-*`, `scratch-*`, snapshots fora dos repositórios). Liste para decisão.
    - **RECURSO:** espaço de Docker e caches. É informativo. Limpeza de recurso exige pedido explícito.
-   - **REQUER_DECISAO:** worktree suja, branch não mesclada, ou branch de outra sessão.
+   - **REQUER_DECISAO:** worktree suja, branch não mesclada, branch de outra sessão, branch integrada em uso no checkout principal, ou branch sem PR mesclada cujo commit já existe no GitHub (nada a resgatar, mas a remoção é decisão do mantenedor).
 3. Monte a lista de remoções propostas, agrupada por classe, com o caminho ou a branch de cada item e o motivo.
 4. Apresente a lista ao mantenedor e aguarde confirmação. Confirmação de um grupo não vale para outro.
 5. Remova apenas o confirmado:
