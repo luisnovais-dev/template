@@ -23,6 +23,9 @@ Reescrita do processo para fatias verticais, Spec pronta, validação dentro do 
 - `higiene-maquina` classifica branch integrada por PR mesclada por squash como seguro remover, e nunca como resgate quando o GitHub confirma a PR.
 - `instalar-processo` varre `~/.codex/skills`, `~/.config/opencode/skills` e `~/.hermes/skills`, e com `--aposentar` copia as skills de usuário para a raiz de aposentados.
 - Cada issue tem uma só branch, com o número da issue no nome. Não se rastreia a `main`.
+- Plano de reversão por tipo de migração: aditiva (backup do provedor recente), transformadora (expandir e contrair, dump das tabelas afetadas), destrutiva (ensaio no clone de produção, dump das tabelas afetadas).
+- Invariante 8 do `AGENTS.md`: nada é resolvido por tentativa silenciosa.
+- `accessibility` entra na lista de remoção após remarcação.
 
 ### Notas de migração desde a versão 1
 

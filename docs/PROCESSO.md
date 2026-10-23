@@ -170,9 +170,11 @@ Preview tem build igual ao de produção, dados sintéticos, segredos próprios,
 
 O clone de produção é o ambiente de ensaio de migrações. Ele é isolado, nunca é escrito pelo E2E automático, é recriado sob demanda e tem os definers removidos. Antes de migração, a reversão é planejada por tipo:
 
-- **aditiva:** expandir e contrair. A migração adiciona o que é novo, o código passa a usar o novo, e só depois o antigo é removido em outra entrega. A reversão é voltar ao código anterior, sem perda de dados.
-- **transformadora:** backup verificado somente das tabelas afetadas, e ensaio no clone de produção antes da execução. A reversão exige rotina de conversão inversa. Dump completo do banco não é exigido, e não é usado como única proteção.
-- **destrutiva:** exige aprovação explícita na invocação e backup verificado das tabelas afetadas antes da execução.
+- **aditiva** (coluna que aceita nulo, tabela nova, índice): conferir que o backup automático do provedor existe e é recente. Não exige dump. A reversão é remover o que foi adicionado.
+- **transformadora** (troca de tipo, backfill, mudança de formato): expandir e contrair. A migração cria o novo ao lado do antigo, o backfill preenche o novo, o código passa a usar o novo, e o antigo só é removido em outra entrega. Antes, dump somente das tabelas afetadas.
+- **destrutiva** (remoção de coluna, tabela ou dados): ensaio no clone de produção, que mede a duração e valida a volta, e dump das tabelas afetadas antes da execução. Exige instrução explícita na invocação.
+
+Dump completo do banco não é exigido em nenhum dos tipos.
 
 O baseline de schema fica numa PR própria, e a CI verifica paridade entre o schema e o baseline.
 

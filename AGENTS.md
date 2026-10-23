@@ -11,6 +11,7 @@ Regras invariantes para qualquer agente de IA neste repositório (Claude, Codex,
 5. Nunca escreva em produção, nem aponte testes ou ferramentas de escrita para ela. A leitura de produção só ocorre por acesso somente leitura configurado e com pedido explícito. Os ambientes que não são produção são regidos pela matriz de ambientes.
 6. Não faça merge, squash ou push para o main remoto sem a instrução explícita da etapa correspondente.
 7. Nunca desative verificação TLS (`rejectUnauthorized: false` ou equivalente).
+8. Nenhum conflito, falha de check ou divergência é resolvido por tentativa silenciosa. Registre o que aconteceu e peça decisão.
 
 ## Ponteiros
 

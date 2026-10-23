@@ -51,6 +51,7 @@ remover_apos_remarcacao:
   - "good first issue"
   - "help wanted"
   - "question"
+  - "accessibility"
 
 repository:
   delete_branch_on_merge: true
