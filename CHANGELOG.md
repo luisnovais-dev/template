@@ -21,7 +21,7 @@ Reescrita do processo para fatias verticais, Spec pronta, validação dentro do 
 - Label `type:chore` no conjunto final. `duplicate`, `invalid` e `wontfix` são mantidos.
 - `delete_branch_on_merge` ligado no repositório. Branches com PR mesclada são removidas.
 - `higiene-maquina` classifica branch integrada por PR mesclada por squash como seguro remover, e nunca como resgate quando o GitHub confirma a PR.
-- `instalar-processo` varre `~/.codex/skills`, `~/.config/opencode/skills` e `~/.hermes/skills`, e com `--aposentar` copia as skills de usuário para a raiz de aposentados.
+- `instalar-processo` varre `~/.codex/skills`, `~/.config/opencode/skills` e `~/.hermes/skills` (no Hermes, só pacotes também instalados em outro harness). Aposentar é feito em dois passos: `--aposentar` copia para a raiz de aposentados, e `--remover-originais` remove do diretório ativo o original cuja cópia foi conferida.
 - Cada issue tem uma só branch, com o número da issue no nome. Não se rastreia a `main`.
 - Plano de reversão por tipo de migração: aditiva (backup do provedor recente), transformadora (expandir e contrair, dump das tabelas afetadas), destrutiva (ensaio no clone de produção, dump das tabelas afetadas).
 - Invariante 8 do `AGENTS.md`: nada é resolvido por tentativa silenciosa.

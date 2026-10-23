@@ -5,6 +5,9 @@
 #   instalar.sh                 mostra o plano (somente leitura, não altera nada)
 #   instalar.sh --aplicar       aplica o plano (cria clone, se preciso, e os links)
 #   instalar.sh --atualizar     atualiza o clone (fast-forward) e aplica o plano
+#   --aposentar                 com --aplicar: copia as outras skills de usuário para a raiz de aposentados
+#   --remover-originais         com --aplicar --aposentar: remove do diretório ativo o original
+#                               cuja cópia foi conferida (use só com a lista confirmada pelo mantenedor)
 #
 # Variáveis (para testes e outras máquinas):
 #   ONLUIS_TEMPLATE_DIR   clone do instalador (padrão: $HOME/.local/share/onluis-dev/template)
@@ -12,7 +15,8 @@
 #   ONLUIS_TEMPLATE_REF   referência remota (padrão: origin/main)
 #
 # Destinos: $HOME/.agents/skills (Codex, OpenCode, Hermes) e $HOME/.claude/skills (Claude).
-# Nunca sobrescreve uma skill existente que não seja link deste clone. Nunca apaga nada.
+# Nunca sobrescreve uma skill existente que não seja link deste clone. Só remove um original
+# com --remover-originais, depois de conferir a cópia em aposentados.
 # Não altera ~/.hermes/config.yaml: só mostra o trecho a incluir.
 # Não imprime valores de segredo: só caminhos e contagens.
 
@@ -20,14 +24,19 @@ set -u
 
 MODO="plano"
 APOSENTAR=0
+REMOVER=0
 for arg in "$@"; do
   case "$arg" in
     --aplicar) MODO="aplicar" ;;
     --atualizar) MODO="atualizar" ;;
     --aposentar) APOSENTAR=1 ;;
-    *) echo "Uso: $0 [--aplicar|--atualizar] [--aposentar]"; exit 64 ;;
+    --remover-originais) REMOVER=1 ;;
+    *) echo "Uso: $0 [--aplicar|--atualizar] [--aposentar [--remover-originais]]"; exit 64 ;;
   esac
 done
+if [ "$REMOVER" -eq 1 ] && { [ "$APOSENTAR" -eq 0 ] || [ "$MODO" != "aplicar" ]; }; then
+  echo "Uso: --remover-originais exige --aplicar --aposentar"; exit 64
+fi
 # Raiz de aposentados: fora do repositório, configurada na Configuração de docs/PROCESSO.md (raiz_aposentados).
 APOSENTADOS="${ONLUIS_APOSENTADOS_DIR:-$HOME/.local/share/onluis-dev/aposentados}"
 
@@ -103,32 +112,60 @@ for destino in "$DEST_AGENTS" "$DEST_CLAUDE"; do
 done
 
 # Skills de usuário fora do processo (ex.: GentleAI) em todos os diretórios conhecidos.
-# Nunca são apagadas. Com --aposentar e --aplicar, são apenas copiadas para a raiz de aposentados.
+# Uma skill é uma pasta (ou link) com SKILL.md. No Hermes, as skills ficam em pastas de
+# categoria e muitas vêm com o próprio Hermes: lá, só é candidata a skill cujo nome também
+# aparece num dos outros diretórios (pacote instalado em vários harnesses).
+eh_do_processo() {
+  local alvo="$1" nome
+  nome=$(basename "$alvo")
+  [ -n "$FONTE" ] && [ -L "$alvo" ] && [ "$(readlink -f "$alvo")" = "$(readlink -f "$FONTE/$nome" 2>/dev/null)" ]
+}
 OUTRAS=()
-for destino in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.agents/skills" \
-  "$HOME/.config/opencode/skills" "$HOME/.hermes/skills"; do
+NOMES_FORA=" "
+for destino in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.agents/skills" "$HOME/.config/opencode/skills"; do
   [ -d "$destino" ] || continue
   for alvo in "$destino"/*; do
     [ -e "$alvo" ] || [ -L "$alvo" ] || continue
-    nome=$(basename "$alvo")
-    case " $SKILLS " in *" $nome "*) [ -L "$alvo" ] && continue ;; esac
-    if [ -L "$alvo" ] && [ "$(readlink -f "$alvo")" = "$(readlink -f "$FONTE/$nome" 2>/dev/null)" ]; then
-      continue
-    fi
+    [ -f "$alvo/SKILL.md" ] || continue
+    eh_do_processo "$alvo" && continue
     OUTRAS+=("$alvo")
-    echo "Outra skill de usuário: $alvo (candidata a aposentar; não é removida por este script)"
+    NOMES_FORA="$NOMES_FORA$(basename "$alvo") "
   done
 done
+HERMES_PROPRIAS=0
+if [ -d "$HOME/.hermes/skills" ]; then
+  while IFS= read -r skill_md; do
+    alvo=$(dirname "$skill_md")
+    case "$NOMES_FORA" in
+      *" $(basename "$alvo") "*) OUTRAS+=("$alvo") ;;
+      *) HERMES_PROPRIAS=$((HERMES_PROPRIAS + 1)) ;;
+    esac
+  done < <(find -L "$HOME/.hermes/skills" -mindepth 2 -maxdepth 3 -name SKILL.md 2>/dev/null)
+fi
+for alvo in "${OUTRAS[@]}"; do
+  echo "Outra skill de usuário: $alvo (candidata a aposentar)"
+done
+[ "$HERMES_PROPRIAS" -gt 0 ] && echo "Hermes: $HERMES_PROPRIAS skill(s) próprias do Hermes ignoradas (não são candidatas)."
 
 if [ "$APOSENTAR" -eq 1 ] && [ "$MODO" = "aplicar" ] && [ "${#OUTRAS[@]}" -gt 0 ]; then
   for alvo in "${OUTRAS[@]}"; do
     rel="${alvo#"$HOME"/}"
-    destino_ap="$APOSENTADOS/$(dirname "$rel")"
-    mkdir -p "$destino_ap"
-    if [ -e "$destino_ap/$(basename "$alvo")" ]; then
-      echo "Aposentados: já existe $destino_ap/$(basename "$alvo"). Não sobrescrito."
+    copia="$APOSENTADOS/$rel"
+    if [ -e "$copia" ]; then
+      echo "Aposentados: já existe $copia. Não sobrescrito."
     else
-      cp -R -L "$alvo" "$destino_ap/" && echo "Cópia em aposentados: $destino_ap/$(basename "$alvo") (original mantido)"
+      mkdir -p "$(dirname "$copia")" && cp -R -L "$alvo" "$copia" && echo "Cópia em aposentados: $copia"
+    fi
+    if [ "$REMOVER" -eq 1 ]; then
+      if [ -e "$copia" ] && diff -rq "$alvo/" "$copia/" >/dev/null 2>&1; then
+        if [ -L "$alvo" ]; then
+          rm "$alvo" && echo "Removido do diretório ativo (link): $alvo"
+        else
+          rm -r "$alvo" && echo "Removido do diretório ativo: $alvo"
+        fi
+      else
+        echo "Mantido: $alvo (cópia ausente ou diferente; nada removido)"
+      fi
     fi
   done
 fi
