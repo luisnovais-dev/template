@@ -20,11 +20,12 @@ Mostra o estado do que o trabalho com agentes deixou nesta máquina e remove som
    ```
    Antes, atualize a referência de cada repositório com `git fetch origin --prune` quando o mantenedor pedir. O inventário não faz fetch.
 2. Leia a saída por classe:
-   - **SEGURO_REMOVER:** worktree limpa com branch mesclada no `origin/main`, ou branch mesclada sem worktree.
-   - **RESGATAR:** branch com commits que não estão em nenhuma branch do remoto vivo. **Nunca** é tratada como segura. Pode ser trabalho não publicado ou branch com PR squash-mesclada cujo remoto foi apagado. Confirme com o mantenedor antes de qualquer ação.
+   - **SEGURO_REMOVER:** worktree limpa cujo trabalho está integrado (ancestral de `origin/main`, ou PR da branch mesclada por squash), e branch integrada sem worktree.
+   - **RESGATAR:** branch com commits fora do remoto vivo e sem PR mesclada. Inclui também o caso em que o GitHub não pôde ser consultado (PR `INDETERMINADO`). **Nunca** é tratada como segura. Confirme com o mantenedor antes de qualquer ação.
    - **ORFAO:** worktree registrada cujo diretório sumiu. Limpe o registro com `git worktree prune` só após confirmação.
-   - **REMOTO_LEGADO:** remote além de `origin`. Liste para decisão.
-   - **LIXO:** resíduo de agente ou temporário dentro do repositório (`.agent/`, `*.log`, `_tmp*`). Liste para decisão.
+   - **REMOTO_LEGADO:** remote cujo dono não está em `HIGIENE_DONOS` nem é o usuário do `gh`, inclusive o `origin`. Revise para decidir se é um remoto antigo.
+   - **PROGRESSO:** `.agent/` com registro de trabalho. Não é lixo e não é removido por esta skill.
+   - **LIXO:** temporário sem trabalho ativo (`_tmp*`, `*.log`, `tmp-verif-*`, `scratch-*`, snapshots fora dos repositórios). Liste para decisão.
    - **RECURSO:** espaço de Docker e caches. É informativo. Limpeza de recurso exige pedido explícito.
    - **REQUER_DECISAO:** worktree suja, branch não mesclada, ou branch de outra sessão.
 3. Monte a lista de remoções propostas, agrupada por classe, com o caminho ou a branch de cada item e o motivo.
