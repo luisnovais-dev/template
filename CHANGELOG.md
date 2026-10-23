@@ -26,6 +26,7 @@ Reescrita do processo para fatias verticais, Spec pronta, validação dentro do 
 - Plano de reversão por tipo de migração: aditiva (backup do provedor recente), transformadora (expandir e contrair, dump das tabelas afetadas), destrutiva (ensaio no clone de produção, dump das tabelas afetadas).
 - Invariante 8 do `AGENTS.md`: nada é resolvido por tentativa silenciosa.
 - `accessibility` entra na lista de remoção após remarcação.
+- `scripts/verificar-template.sh` verifica links e segredos também em arquivos não rastreados (e não ignorados), antes do stage.
 
 ### Notas de migração desde a versão 1
 

@@ -19,6 +19,17 @@ falha() {
   FALHAS=$((FALHAS + 1))
 }
 
+# Arquivos da árvore de trabalho: rastreados e não rastreados, sem os ignorados pelo
+# .gitignore. Assim arquivos novos, ainda fora do stage, também são verificados.
+# Fora de um repositório git, percorre a árvore sem .git.
+listar_arquivos() {
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git ls-files --cached --others --exclude-standard -- "$@"
+  else
+    find . -type f -not -path './.git/*' | sed 's#^\./##' | if [ "$#" -gt 0 ]; then grep -E '\.md$'; else cat; fi
+  fi
+}
+
 # 1. Links relativos em Markdown devem resolver.
 verificar_links() {
   local arq dir alvo
@@ -37,7 +48,7 @@ verificar_links() {
         falha "link quebrado em $arq -> $alvo"
       fi
     done < <(grep -oE '\]\([^)]+\)' "$arq" 2>/dev/null)
-  done < <(git ls-files '*.md' 2>/dev/null || find . -name '*.md' -not -path './.git/*')
+  done < <(listar_arquivos '*.md' | sort -u)
 }
 
 # 2. YAML dos formulários e do manifesto de labels deve ser válido.
@@ -169,7 +180,7 @@ verificar_env_example() {
   done < .env.example
 }
 
-# 7. Padrões de segredo em arquivos versionados.
+# 7. Padrões de segredo em arquivos versionados ou prestes a ser (não rastreados e não ignorados).
 verificar_segredos() {
   local padroes arq
   padroes='AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC |OPENSSH |)PRIVATE KEY-----|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{32,}'
@@ -181,7 +192,7 @@ verificar_segredos() {
     if grep -qE "$padroes" "$arq" 2>/dev/null; then
       falha "possível segredo em $arq (padrão conhecido; valor não exibido)"
     fi
-  done < <(git ls-files 2>/dev/null)
+  done < <(listar_arquivos | sort -u)
 }
 
 verificar_links
