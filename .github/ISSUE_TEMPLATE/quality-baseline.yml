@@ -1,5 +1,5 @@
-name: Quality baseline
-description: Register a quality gate failure confirmed on the remote main, without attributing it to a new change.
+name: Baseline de qualidade
+description: Registrar uma falha de gate confirmada na main remota, sem atribuí-la a uma mudança nova.
 title: "[baseline] "
 labels:
   - type:bug
@@ -8,20 +8,20 @@ body:
     id: gate
     attributes:
       label: Gate
-      description: Which gate is represented by this baseline record?
+      description: Qual gate este registro representa?
       options:
         - Lint
         - Typecheck
-        - Tests
+        - Testes
         - Build
-        - Multiple gates
+        - Vários gates
     validations:
       required: true
   - type: textarea
-    id: evidence
+    id: evidencia
     attributes:
-      label: Evidence
-      description: Provide the exact commands and results from a clean checkout of the remote main.
+      label: Evidência
+      description: Comandos exatos e resultados de um checkout limpo da main remota.
       placeholder: |
         <comando de lint> — <resultado resumido>
         <comando de testes> — <resultado resumido>
@@ -29,25 +29,25 @@ body:
     validations:
       required: true
   - type: textarea
-    id: impact
+    id: impacto
     attributes:
-      label: Operational impact
-      description: Explain what is known about the impact and what remains uncertain.
+      label: Impacto operacional
+      description: O que se sabe sobre o impacto e o que continua incerto.
     validations:
       required: true
   - type: textarea
-    id: remediation
+    id: remediacao
     attributes:
-      label: Remediation plan
-      description: Describe the follow-up work or the owner needed to retire this baseline.
+      label: Plano de correção
+      description: Trabalho de acompanhamento ou responsável necessário para encerrar esta baseline.
     validations:
       required: true
   - type: checkboxes
-    id: confirmation
+    id: classificacao
     attributes:
-      label: Classification
+      label: Classificação
       options:
-        - label: The same result was reproduced on a clean checkout of the remote main.
+        - label: O mesmo resultado foi reproduzido em um checkout limpo da main remota.
           required: true
-        - label: This record does not approve bypassing future regressions in the same area.
+        - label: Este registro não autoriza ignorar regressões futuras na mesma área.
           required: true

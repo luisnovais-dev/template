@@ -1,30 +1,32 @@
-## Summary
+## Resumo
 
 <!-- Problema resolvido e comportamento entregue, em poucas linhas. -->
 
 Closes #
 
+<!-- Em fatia intermediária, use Refs # no lugar de Closes #. -->
+
 ## Spec
 
-<!-- Referência à Spec aprovada e aos itens comentados na issue. -->
+<!-- Referência à Spec aprovada e aos itens comentados na issue. Informe as emendas de produto, se houver. -->
 
-## Implementation
+## Implementação
 
-<!-- Principais alterações, organizadas por comportamento (não só por arquivo). -->
+<!-- Principais alterações, organizadas por comportamento (não só por arquivo). Decisões técnicas locais vão aqui. -->
 
-## Tasks
+## Tarefas
 
-<!-- Tasks da Spec. Marque apenas as efetivamente satisfeitas. -->
+<!-- Tarefas da Spec. Marque apenas as efetivamente satisfeitas. -->
 
-- [ ] Task 1
+- [ ] Tarefa 1
 
-## Acceptance Criteria
+## Critérios de aceite
 
 <!-- Resultado da auditoria. Deixe explícito o que estiver parcial. -->
 
 - [ ] Critério 1
 
-## Verification
+## Verificação
 
 <!-- Informe separadamente o que foi executado. Não marque como aprovado o que não rodou ou não passou. -->
 
@@ -36,22 +38,36 @@ Closes #
 - Build:
 - Smoke (se configurado):
 - E2E: não aplicável, ou resultado:
-- Visual (se houver mudança de interface): capturas anexadas
+- Visual (se houver mudança de interface): capturas desktop e mobile anexadas, e resultado da autoavaliação
 
 Diferencie falhas preexistentes (baseline) das introduzidas por esta branch.
 
-## Manual Acceptance
+## Documentação
 
-<!-- Fluxo validado manualmente pelo responsável antes da abertura da PR, se aplicável. -->
+<!-- Obrigatório. Liste os documentos atualizados nesta PR. Se a mudança não altera funcionalidade, escreva "não aplicável" e o motivo. -->
 
-## Known Limitations / Residual Risks
+- Documentos atualizados:
+- README e descrição do repositório (se o que o projeto faz mudou):
+
+## Roteiro de aceite manual
+
+<!-- Obrigatório. Use para o responsável testar antes do aceite. -->
+
+- O que foi entregue (funções, telas e rotas):
+- Onde testar (ambiente e caminho):
+- Conta de teste (pela referência de identidade de teste):
+- Cenários e resultado esperado:
+  1.
+- Já verificado automaticamente:
+
+## Limitações conhecidas e riscos residuais
 
 <!-- Limitações documentadas na Spec e no relatório. Indique as issues abertas para resolvê-las. -->
 
-## Size
+## Tamanho
 
-<!-- Linhas alteradas, excluindo arquivos gerados. Se acima de 2.000, justifique e use o label size:exception. -->
+<!-- Linhas alteradas, excluindo arquivos gerados. Se acima do teto, justifique e use o label size:exception. -->
 
-## Evidence
+## Evidência
 
 <!-- Testes executados, resultados, commits e arquivos principais. Evidência concisa. -->
