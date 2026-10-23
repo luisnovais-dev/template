@@ -74,6 +74,37 @@ PY
   fi
 }
 
+# 2c. Chaves da Configuração (docs/PROCESSO.md) só podem ser definidas nesse arquivo.
+# Outro arquivo que defina a mesma chave em YAML (linha "chave:") quebra a regra de um dono.
+verificar_duplicidade_configuracao() {
+  [ -e docs/PROCESSO.md ] || return
+  command -v python3 >/dev/null 2>&1 || return
+  local saida
+  saida=$(python3 - <<'PY' 2>&1
+import glob, re, sys
+src = open("docs/PROCESSO.md", encoding="utf-8").read()
+m = re.search(r"^## Configuração\n.*?```yaml\n(.*?)```", src, flags=re.S | re.M)
+if not m:
+    sys.exit(0)
+chaves = set()
+for linha in m.group(1).splitlines():
+    k = re.match(r"^\s*([a-z_][a-z0-9_]*):", linha)
+    if k:
+        chaves.add(k.group(1))
+for arq in glob.glob("**/*.md", recursive=True) + glob.glob("skills/**/*.yml", recursive=True):
+    if arq.startswith(".claude/") or arq.startswith(".git/") or arq == "docs/PROCESSO.md":
+        continue
+    texto = open(arq, encoding="utf-8", errors="ignore").read()
+    for chave in sorted(chaves):
+        if re.search(rf"^\s*{chave}:\s", texto, flags=re.M):
+            print(f"chave de Configuração '{chave}' definida também em {arq} (dono único é docs/PROCESSO.md)")
+PY
+)
+  if [ -n "$saida" ]; then
+    while IFS= read -r linha; do falha "$linha"; done <<< "$saida"
+  fi
+}
+
 # 3. Frontmatter de cada skill: name igual ao nome da pasta, minúsculas e hífens, e description presente.
 verificar_skills() {
   local arq pasta nome
@@ -156,6 +187,7 @@ verificar_segredos() {
 verificar_links
 verificar_yaml
 verificar_labels
+verificar_duplicidade_configuracao
 verificar_skills
 verificar_links_simbolicos
 verificar_env_versionado
