@@ -39,7 +39,7 @@ Para um projeto que já adotou a versão 1:
 4. Crie `.github/labels.yml` e aplique o conjunto final. Remarque os labels em uso antes de remover qualquer um, e peça autorização para criar ou alterar labels. Ligue `delete_branch_on_merge` (com autorização).
 4a. Não remova `duplicate`, `invalid` nem `wontfix`. Remova `good first issue`, `help wanted` e `question` só com a lista confirmada pelo mantenedor.
 5. Se o projeto tiver a skill `higiene-git` instalada na máquina, substitua-a pela `higiene-maquina` com `instalar-processo`.
-6. Classifique as skills do projeto conforme `docs/PROCESSO.md` (seção Skills) e o passo 3a do `adotar-processo`. Remova as do processo, que agora são instaladas por máquina. Mova as próprias do projeto de `skills/` para `.agents/skills/`, com o link em `.claude/skills/`. Nunca remova uma skill própria. Ajuste o `CLAUDE.md` do projeto para o texto novo do manifesto (apenas `@AGENTS.md` e a seção Claude Code), sem links para `.claude/skills`.
+6. Classifique as skills do projeto conforme `docs/PROCESSO.md` (seção Skills) e o passo 3a do `adotar-processo`. Remova as do processo, que agora são instaladas por máquina. Mova as próprias do projeto de `skills/` para `.agents/skills/`, com o link em `.claude/skills/`. Nunca remova uma skill própria. Ajuste o `CLAUDE.md` do projeto para o texto novo do manifesto (`@AGENTS.md` e a seção Claude Code). Os links de `.claude/skills/` das skills próprias continuam.
 7. Abra uma PR única com a adoção, sem reorganizar o código nem a documentação.
 
 ## 1
