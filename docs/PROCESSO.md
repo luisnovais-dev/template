@@ -1,17 +1,8 @@
 # Processo de trabalho
 
-Este documento é o dono do procedimento: como uma mudança passa de um relato até o main remoto, quais são as regras de autorização, de worktree, de ambiente e de documentação, e onde ficam os valores de configuração. As regras invariantes para qualquer agente estão em [`AGENTS.md`](../AGENTS.md). As etapas são executadas pelas skills em `skills/`. Os valores que as skills leem estão na seção [Configuração](#configuração).
+Este documento é o dono do procedimento: como uma mudança passa de um relato até o main remoto, quais são as regras de autorização, de worktree, de ambiente e de documentação, e onde ficam os valores de configuração. As regras invariantes para qualquer agente estão em [`AGENTS.md`](../AGENTS.md), e não são repetidas aqui. As etapas são executadas pelas skills, instaladas por máquina. Os valores que as skills leem estão na seção [Configuração](#configuração).
 
 Cada regra tem um único dono. As demais seções e arquivos citam a chave, não repetem o texto.
-
-## Regras não negociáveis
-
-1. O main remoto não é branch de desenvolvimento.
-2. Cada mudança nasce em uma branch e em uma worktree próprias.
-3. Nenhum segredo, arquivo `.env`, cookie, backup, log, coverage ou arquivo temporário entra em commit.
-4. Nenhuma ação em produção é executada sem revisão, aprovação humana e instrução explícita na invocação.
-5. Nenhum conflito, falha de check ou divergência é resolvido por tentativa silenciosa.
-6. O gerenciador de dependências e o lockfile são os definidos em [Configuração](#configuração).
 
 ## Hierarquia
 
@@ -33,14 +24,14 @@ Não há número fixo de tickets por épico, nem estimativa em unidades de tempo
 | 0. Relato | `relato-para-issue` | Queixa, dor, história ou pedido em linguagem livre | Issue publicada, com capacidade, cenários e tipo (bug, ticket ou épico) |
 | 1. Especificação | `spec-issue` | Issue e código relacionado | Spec, Tasks, Requisitos de Segurança, matriz de rastreabilidade, comentadas na issue |
 | 1a. Aprovação | (humana) | Spec | Aprovação explícita na conversa, seguida do label de aprovação |
-| 2. Implementação | `implementar-spec` | Spec aprovada | Commits atômicos na branch, com testes, documentação e validação visual quando houver interface |
+| 2. Implementação | `implementar-spec` | Spec aprovada | Commits atômicos na branch da issue, com testes, documentação e validação visual quando houver interface |
 | 3. Auditoria | `auditar-spec` | Implementação | Relatório PASS, PARTIAL, FAIL ou NOT TESTED por Requirement, Acceptance Criterion e Task |
 | 3a. Aceite local | (humana) | Relatório e roteiro de aceite manual | Aceite do mantenedor, validado localmente |
 | 4. Pull request | `abrir-pr` | Branch auditada | PR com o template, vinculada à issue |
 | 5. Review independente | `review-pr` | PR | Review em contexto novo, com findings classificados e marcador |
 | 5.2. Remediação | `tratar-findings` | Findings | Correções com TDD e resposta a cada finding |
 | 5.3. Re-review | `review-pr` (modo re-review) | Correções | Status de cada finding e nova verificação do diff incremental |
-| 6. Merge gate | `merge-gate` | PR com review válido | Squash merge, branch e worktree limpas |
+| 6. Merge gate | `merge-gate` | PR com review válido | Squash merge, branch e worktree limpas, e fechamento do épico quando for o último ticket |
 
 ### Etapa 0: relato para issue
 
@@ -59,32 +50,33 @@ A Spec só é aprovável no gate **Spec pronta**, verificado pela `spec-issue`:
 
 A Spec lista os documentos afetados, classifica o risco como **comum** ou **sensível** (sensível: autenticação, dados pessoais, financeiro, migração destrutiva ou produção) e propõe ADR quando houver decisão transversal.
 
-Quando há fronteira entre front e back, a Spec traz o contrato da interface, com verificação automática de divergência (ver [Contrato](#contrato-e-testes)).
+Quando há fronteira entre front e back, a Spec traz o contrato da interface, com verificação automática de divergência (ver [Contrato e testes](#contrato-e-testes)).
 
 ### Etapa 1a: aprovação
 
-A aprovação é dada pelo mantenedor na conversa. Só depois dela o agente comenta a Spec na issue e aplica o label de aprovação (`label_aprovacao`). Esse label é um controle do processo, não do código.
+A aprovação é dada pelo mantenedor na conversa. Só depois dela o agente comenta a Spec na issue e aplica o label de aprovação (`label_aprovacao`). Esse label registra a aprovação da Spec, não da PR.
 
 ### Etapa 2: implementação
 
 - Execução das Tasks na ordem da Spec, sem pausas entre elas, exceto por bloqueio real (decisão que a Spec não cobre).
+- Uma issue, uma branch e uma worktree (ver [Worktrees e branches](#worktrees-e-branches)).
 - TDD para cada comportamento testável, em dois níveis: teste de aceitação do épico (ver [Contrato e testes](#contrato-e-testes)) e teste unitário do ticket. RED: teste que falha pelo motivo esperado. GREEN: implementação mínima. REFACTOR: com testes verdes. Falha de configuração, import, fixture ou ambiente não conta como RED válido.
 - Antes de criar um mecanismo de teste ou verificação, o agente procura o que já existe. O mecanismo criado é versionado, declarado na Configuração, documentado e genérico. Scripts ou configurações por PR ou issue são proibidos.
-- Commits pequenos e atômicos, cada um deixando o código consistente. Tasks não são commits.
+- Commits pequenos e atômicos, cada um deixando o código consistente. Tarefas não são commits.
 - Decisões que surgirem durante a implementação são classificadas: **produto** (emenda da Spec na issue, com aceite do mantenedor), **técnica local** (registrada na PR) ou **transversal** (ADR em `docs/adr/`). A auditoria conta as emendas.
-- Ao concluir uma Task, o registro de progresso em `.agent/progresso.md` (não versionado) recebe comportamentos, testes, resultados, commits e desvios.
+- Ao concluir uma Tarefa, o registro de progresso em `.agent/progresso.md` (não versionado) recebe comportamentos, testes, resultados, commits e desvios.
 - Mudança de interface segue o [ciclo de validação visual](#validação-visual) dentro do próprio ticket.
 - Sem squash durante o desenvolvimento.
 
 ### Etapa 3: auditoria
 
-Os comandos de verificação configurados são executados, assim como os testes de integração e os cenários E2E que a Configuração definir. Cada Requirement, Acceptance Criterion e Task recebe PASS, PARTIAL, FAIL ou NOT TESTED com evidência. A auditoria também confirma: Tasks concluídas, critérios cobertos, Requisitos de Segurança atendidos (ou marcados como não aplicáveis), alterações fora do escopo, alterações de esquema ou de dados não previstas, documentação afetada atualizada, emendas da Spec e riscos residuais.
+Os comandos de verificação configurados são executados, assim como os testes de integração e os cenários E2E que a Configuração definir. Cada Requirement, Acceptance Criterion e Task recebe PASS, PARTIAL, FAIL ou NOT TESTED com evidência. A auditoria também confirma: Tarefas concluídas, critérios cobertos, Requisitos de Segurança atendidos (ou marcados como não aplicáveis), alterações fora do escopo, alterações de esquema ou de dados não previstas, documentação afetada atualizada, emendas da Spec e riscos residuais.
 
-Ticket de interface sem a evidência do ciclo visual é bloqueado nesta etapa. A auditoria também produz o **roteiro de aceite manual** (ver [Roteiro de aceite](#roteiro-de-aceite-manual)).
+Ticket de interface sem a evidência do ciclo visual é bloqueado nesta etapa. A auditoria também produz o **roteiro de aceite manual** (ver [Roteiro de aceite manual](#roteiro-de-aceite-manual)).
 
 ### Etapa 4: pull request
 
-A PR usa o template em `.github/pull_request_template.md`. Ela referencia a Spec, lista as Tasks marcadas apenas quando satisfeitas e registra a verificação com resultados reais. Testes não executados não são marcados como aprovados.
+A PR usa o template em `.github/pull_request_template.md`. Ela referencia a Spec, lista as Tarefas marcadas apenas quando satisfeitas e registra a verificação com resultados reais. Testes não executados não são marcados como aprovados.
 
 Regras da PR:
 
@@ -107,7 +99,7 @@ Os findings são classificados como:
 
 Cada finding traz severidade, arquivo e linha, comportamento observado, comportamento esperado, justificativa, cenário que reproduz e sugestão de correção. Findings especulativos não são registrados.
 
-O review é publicado com o marcador descrito em [Review como comentário](#review-como-comentário).
+O review é publicado com o marcador descrito em [Review como comentário](#review-como-comentário). Quando a identidade do revisor é diferente da do autor, o review é formal (aprovação ou solicitação de mudanças), conforme o resultado. Quando é a mesma, é comentário com o marcador.
 
 ### Etapa 5.2: remediação
 
@@ -119,7 +111,7 @@ O revisor confirma cada finding como RESOLVED, PARTIALLY RESOLVED ou UNRESOLVED,
 
 ### Etapa 6: merge gate
 
-O merge gate verifica: HEAD revisado contra o HEAD atual da PR, estado dos checks obrigatórios, conflitos com o main remoto, commits inesperados, segredos ou arquivos de ambiente no diff, documentação conferida, suíte de aceite do épico (quando a PR fecha o épico) e limitações conhecidas.
+O merge gate verifica: HEAD revisado contra o HEAD atual da PR, estado dos checks obrigatórios, conflitos com o main remoto, commits inesperados, segredos ou arquivos de ambiente no diff, documentação conferida e limitações conhecidas.
 
 Resultados possíveis:
 
@@ -130,13 +122,21 @@ Resultados possíveis:
 
 A invocação da etapa 6 é a autorização do squash, se o gate estiver verde. Depois do merge, a branch remota e a worktree são limpas (ver [Worktrees e branches](#worktrees-e-branches)).
 
+**Fechamento do épico.** Quando a PR é o último ticket filho aberto do épico (todos os outros itens da checklist estão fechados), o merge gate faz mais uma verificação, antes de dar o resultado final:
+
+1. a suíte de aceite do épico está ativada, na branch integrada, e verde;
+2. o épico não tem item pendente na checklist;
+3. o flag de feature (se houver) está desligado em produção ou será removido nesta PR, conforme o plano.
+
+Se as três condições valem, o merge gate informa "fecha o épico" no resultado. O fechamento do épico é ação separada, e exige instrução explícita na invocação. Sem a suíte verde, o épico não fecha, mesmo com todos os tickets mesclados.
+
 ## Contrato e testes
 
 ### Épico e suíte de aceite
 
 - O plano do épico tem cenários Given/When/Then, o grafo de tickets por papel (contrato, persistência, regra, interface, integração e aceite) e, quando houver fronteira entre front e back, o esboço do contrato.
 - A suíte de aceite do épico é escrita no primeiro ticket, marcada como pendente com a tag do épico, e ativada no ticket que fecha o épico.
-- O épico só fecha com a suíte verde na `main` integrada. O `merge-gate` não fecha o épico sem ela.
+- O épico só fecha com a suíte verde na `main` integrada (ver [Etapa 6](#etapa-6-merge-gate)).
 
 ### Contrato
 
@@ -148,9 +148,11 @@ Feature flag é obrigatório quando código mesclado expõe ao usuário um compo
 
 ## Ambientes
 
-A matriz de ambientes fica na [Configuração](#configuração), chave `ambientes`. Ela define, para cada ambiente, se o agente pode ler, testar, escrever dados e fazer deploy sem pedir nova autorização na invocação.
+A matriz de ambientes fica na [Configuração](#configuração), chave `ambientes`. Ela define, para cada ambiente, se o agente pode ler, testar, escrever dados e fazer deploy sem pedir nova autorização na invocação. É a única pré-autorização permanente que o processo admite, e só vale para as células marcadas como `sim`.
 
-- **Local, DEV, STAGING e CLONE_PROD** podem ser pré-autorizados pela matriz, quando configurados como tal.
+- **Local e DEV** podem ser pré-autorizados pela matriz, conforme configurado.
+- **STAGING** segue a mesma regra, conforme configurado.
+- **CLONE_PROD** é o ambiente de ensaio de migração. Nunca é escrito pelo E2E automático. Escrita para ensaio de migração exige instrução explícita na invocação, mesmo que a matriz esteja configurada.
 - **PROD** nunca é pré-autorizado para escrita, teste ou deploy. Leitura só ocorre por acesso somente leitura configurado e com pedido explícito.
 - Testes e comandos de escrita conferem o alvo antes de executar (invariante 5 de [`AGENTS.md`](../AGENTS.md)).
 
@@ -168,9 +170,9 @@ Preview tem build igual ao de produção, dados sintéticos, segredos próprios,
 
 O clone de produção é o ambiente de ensaio de migrações. Ele é isolado, nunca é escrito pelo E2E automático, é recriado sob demanda e tem os definers removidos. Antes de migração, a reversão é planejada por tipo:
 
-- **aditiva:** reversão é remover o que foi adicionado, sem perda de dados;
-- **transformadora:** reversão exige backup verificado e rotina de conversão inversa;
-- **destrutiva:** exige aprovação explícita e backup verificado antes da execução.
+- **aditiva:** expandir e contrair. A migração adiciona o que é novo, o código passa a usar o novo, e só depois o antigo é removido em outra entrega. A reversão é voltar ao código anterior, sem perda de dados.
+- **transformadora:** backup verificado somente das tabelas afetadas, e ensaio no clone de produção antes da execução. A reversão exige rotina de conversão inversa. Dump completo do banco não é exigido, e não é usado como única proteção.
+- **destrutiva:** exige aprovação explícita na invocação e backup verificado das tabelas afetadas antes da execução.
 
 O baseline de schema fica numa PR própria, e a CI verifica paridade entre o schema e o baseline.
 
@@ -196,7 +198,7 @@ A Spec lista os Requisitos de Segurança acionados pela superfície da mudança.
 
 ### Contrato visual
 
-Imagem ou referência enviada pelo usuário pode ser a fonte de verdade. A Spec traz o inventário de elementos, classificados como adotado, adaptado (com motivo), descartado ou divergente entre imagens, e a fidelidade (próxima ou inspiração). O repositório é a única fonte de verdade da interface. Claude Design é opcional e tem uma direção só.
+Imagem ou referência enviada pelo usuário pode ser a fonte de verdade. A Spec traz o inventário de elementos, classificados como adotado, adaptado (com motivo), descartado ou divergente entre imagens, e a fidelidade (próxima ou inspiração). O repositório é a única fonte de verdade da interface. Claude Design é opcional, tem uma direção só, e o canvas dele não faz parte da definição de pronto: o que vale é o código no repositório validado pelo ciclo visual.
 
 ### Validação visual
 
@@ -247,9 +249,9 @@ Texto da organização em pt-BR. Identificadores (código, pastas, tokens, chave
 
 ## Autorização
 
-- **A autorização vale para a invocação.** Quem invoca uma skill com a ação explícita já autorizou aquela ação. Nenhum arquivo versionado concede autorização permanente.
-- **Ações que exigem instrução explícita na invocação:** publicar issue, publicar comentário, abrir PR, aplicar label de aprovação, criar label, squash merge, merge, apagar branch remota ou local, remover worktree, remover arquivos, qualquer ação em produção e qualquer deploy fora da matriz de ambientes.
-- **Ambientes pré-autorizados** pela [matriz](#ambientes) dispensam nova autorização para a ação que a matriz cobre. Produção nunca é pré-autorizada.
+- **A autorização vale para a invocação.** Quem invoca uma skill com a ação explícita já autorizou aquela ação.
+- **Única exceção permanente:** a matriz de ambientes da Configuração. Uma célula marcada como `sim` dispensa nova autorização para a ação correspondente, naquele ambiente. Nenhuma outra configuração versionada concede autorização. Produção nunca é pré-autorizada.
+- **Ações que exigem instrução explícita na invocação:** publicar issue, publicar comentário, abrir PR, aplicar label de aprovação, criar ou alterar label, squash merge, fechar épico, apagar branch remota ou local, remover worktree, remover arquivos, copiar ou aposentar skills de usuário, qualquer ação em produção e qualquer deploy fora da matriz.
 - **Bypass de proteção de branch ou de checks obrigatórios** só acontece com autorização explícita do mantenedor na própria invocação, e somente se a plataforma oferecer esse mecanismo ao usuário. O agente não contorna proteção por conta própria.
 - **O bypass administrativo nunca cobre** checks obrigatórios, conflitos, achados pendentes ou mudanças destrutivas.
 - Uma etapa autorizada é executada até o fim, sem pausas por cautela, exceto por bloqueio real (decisão que a Spec não cobre).
@@ -281,21 +283,15 @@ REVIEW STATUS: <estado>
 
 ## Labels
 
-Os labels são definidos no manifesto `.github/labels.yml`. Cada projeto cria o mesmo conjunto com `adotar-processo`.
+Os nomes, cores e descrições dos labels estão em `.github/labels.yml`, que é a fonte única desse conjunto. Este documento define as regras de uso:
 
-| Label | Uso |
-|---|---|
-| `type:feature` | Funcionalidade nova |
-| `type:bug` | Correção de comportamento incorreto |
-| `type:docs` | Mudança somente de documentação |
-| `type:epic` | Agrupamento de entregas que formam uma capacidade |
-| `type:enhancement` | Melhoria de funcionalidade existente |
-| `status:approved` | Spec aprovada pelo mantenedor |
-| `size:exception` | PR acima do teto de tamanho, com justificativa |
+- Cada PR tem exatamente um `type:*`.
+- `status:approved` registra a aprovação da Spec. Nunca aprova a PR.
+- `size:exception` é o único registro de exceção de tamanho.
+- `duplicate`, `invalid` e `wontfix` fazem parte do conjunto final e não são removidos pela normalização.
+- Labels não são criados nem alterados no GitHub sem instrução explícita na invocação.
 
-Cada PR tem exatamente um `type:*`. Labels não são criados nem alterados no GitHub sem instrução explícita na invocação.
-
-**Normalização.** Um label em uso que não existe no conjunto final é remarcado para o label correto, e só depois é removido. Nenhum label em uso é removido antes da remarcação.
+**Normalização.** Um label em uso que não está no manifesto é remarcado para o correspondente (seção `remarcar` do manifesto) e só depois é removido. Os que não têm correspondente vão para decisão do mantenedor, com lista. Nenhum label em uso é removido antes da remarcação.
 
 **Branches.** `delete_branch_on_merge` fica ligado no repositório. Branches com PR mesclada são removidas. Branches sem PR são listadas para decisão.
 
@@ -312,36 +308,32 @@ Falhas de gate confirmadas em um checkout limpo do main remoto são registradas 
 
 ## Acúmulo
 
-Artefatos antigos (specs, relatórios, skills copiadas e código sem uso) são retirados do repositório. A cópia vai para a raiz de aposentados, fora do repositório. Código legado só sai com prova de não uso.
+Artefatos antigos (specs, relatórios, skills copiadas e código sem uso) são retirados do repositório. A cópia vai para a raiz de aposentados (`raiz_aposentados` da Configuração), fora do repositório, e o original só é removido com lista e confirmação. Código legado só sai com prova de não uso. Skills de usuário que conflitam com o processo são copiadas para essa raiz pelo instalador, com `--aposentar`.
 
 ## Worktrees e branches
 
 Worktree é temporária. Ela é criada para uma mudança e removida ao fim do trabalho, se estiver limpa.
 
-- Prefixos de branch: `prefixos_branch` da Configuração.
+- **Uma issue, uma branch, uma worktree.** Antes de criar, procure a branch e a worktree que já existem para a issue (`git worktree list` e busca pelo número da issue). Se existir, reutilize-a, depois de confirmar o estado. Não crie segunda branch para a mesma issue sem decisão do mantenedor.
+- Nome da branch: prefixo de `prefixos_branch` seguido do número da issue, por exemplo `docs/2-processo-v2`.
+- Ao criar, a branch não rastreia a `main`: use `--no-track` a partir de `origin/main`. Publique só a própria branch, com `git push -u origin <branch>`. Nunca faça push para a `main`.
 - O diretório da worktree depende da ferramenta que a criou. Claude usa `.claude/worktrees/<nome>`. Codex usa `~/.codex/worktrees/<nome>`, fixo pela ferramenta. OpenCode usa o diretório do checkout, conforme a configuração local. Não crie worktree fora do diretório que a ferramenta usa.
 - Antes de criar uma worktree, atualize as referências: `git fetch origin --prune`.
 - Antes de editar, confirme `git status` limpo, a branch atual e a relação com o main remoto.
-- Antes de remover, confirme que não há trabalho não publicado. Não remova worktree de outra sessão.
+- Antes de remover, confirme que não há trabalho não publicado. Não remova worktree de outra sessão, nem limpe branch, worktree ou artefato de outra sessão automaticamente. Liste o alvo, confirme que não está associado a trabalho ativo e peça confirmação.
 - Use `git worktree list` para inspecionar, independentemente da localização.
 - Branch remota de feature é apagada após o squash merge. Branch local é apagada após o merge, se não houver trabalho não publicado.
 - Nenhuma worktree ou branch é removida sem confirmação de que não há trabalho ativo. A skill `higiene-maquina` lista o estado e pede confirmação.
-
-## Estado local
-
-Não limpe branches, worktrees ou artefatos de outra sessão automaticamente. Liste o alvo, confirme que não está associado a trabalho ativo e peça confirmação antes de remover.
 
 ## Identidade GitHub
 
 O processo usa a sessão `gh` ativa (`gh auth status`). A conta pode variar por colaborador e não é fixada neste documento. Commits usam a identidade dessa sessão, com o e-mail de noreply do GitHub.
 
-## Manutenção do template
-
-O template tem uma verificação própria: `scripts/verificar-template.sh`. Ela confere links relativos, YAML dos formulários e do manifesto de labels, frontmatter das skills, links simbólicos de `.claude/skills`, `.env` versionado, valores do `.env.example` e padrões de segredo. Rode-a antes de cada commit no template. Ela não vai para os projetos.
-
 ## Skills
 
-As etapas do processo estão em `skills/`. Cada skill é um procedimento com entrada, saída e gates. Claude as carrega por `.claude/skills/`, que aponta para cada pasta em `skills/`. Outras ferramentas leem as skills por `~/.agents/skills` (ver `instalar-processo`). A pasta `skills/` não é copiada para os projetos.
+As etapas do processo são executadas por skills. As skills não são copiadas para os projetos: são instaladas por máquina com `instalar-processo`, por links.
+
+Se as skills não estiverem disponíveis no ambiente de execução (por exemplo, numa sessão na nuvem), leia o procedimento em `skills/<nome>/SKILL.md` no repositório do template, `onluis-dev/template`, antes de executar a etapa. Não invente o procedimento a partir da memória.
 
 ## Configuração
 
@@ -355,6 +347,7 @@ label_tipo: <!-- label type:* escolhido para a PR, exatamente um -->
 label_aprovacao: status:approved
 label_excecao_tamanho: size:exception
 teto_pr_linhas: 2000
+raiz_aposentados: ~/.local/share/onluis-dev/aposentados
 env_check: <!-- comando que confere as chaves do .env sem exibir valores, ou vazio -->
 comandos:
   lint: <!-- comando de lint -->
@@ -368,11 +361,12 @@ comandos:
 ambiente_local: <!-- comando para subir o ambiente local, ou referência à skill ambiente-dev -->
 ambientes:
   # Matriz: sim = pré-autorizado na invocação; nao = exige instrução explícita.
-  # PROD: leitura só com acesso somente leitura configurado e com pedido.
+  # CLONE_PROD: escrita de ensaio de migração exige instrução na invocação, mesmo com sim.
+  # PROD: leitura só com acesso somente leitura configurado e com pedido. Nunca pré-autorizado.
   local:       {ler: sim, testar: sim, escrever_dados: sim, deploy: nao}
   dev:         {ler: sim, testar: <!-- sim ou nao -->, escrever_dados: <!-- sim ou nao -->, deploy: <!-- sim ou nao -->}
   staging:     {ler: sim, testar: <!-- sim ou nao -->, escrever_dados: <!-- sim ou nao -->, deploy: <!-- sim ou nao -->}
-  clone_prod:  {ler: sim, testar: sim, escrever_dados: sim, deploy: nao}
+  clone_prod:  {ler: sim, testar: nao, escrever_dados: nao, deploy: nao}
   prod:        {ler: nao, testar: nao, escrever_dados: nao, deploy: nao}
 stack:
   gerenciador_pacotes: <!-- ex.: nome do gerenciador -->

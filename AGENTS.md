@@ -25,4 +25,4 @@ Regras invariantes para qualquer agente de IA neste repositório (Claude, Codex,
 | Gate de documentação | [`docs/PROCESSO.md`](docs/PROCESSO.md#gate-de-documentação) |
 | Validação visual | [`docs/PROCESSO.md`](docs/PROCESSO.md#validação-visual) |
 | Valores de configuração | [`docs/PROCESSO.md`](docs/PROCESSO.md#configuração) |
-| Skills de cada etapa | [`skills/`](skills/) |
+| Skills de cada etapa (instaladas por máquina; se faltarem, ver a seção Skills) | [`docs/PROCESSO.md`](docs/PROCESSO.md#skills) |

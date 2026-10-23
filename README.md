@@ -33,4 +33,10 @@ scripts/verificar-template.sh
 
 Ela confere links relativos, YAML dos formulários e do manifesto de labels, frontmatter das skills, links simbólicos de `.claude/skills`, `.env` versionado, valores do `.env.example`, padrões de segredo e a conformidade dos labels dos formulários com `.github/labels.yml`.
 
+Regras de manutenção do próprio template:
+
+- Edite as skills em `skills/`. A pasta `.claude/skills/` contém só links para elas, e não deve ser editada.
+- Os arquivos que vão para os projetos estão listados em `skills/adotar-processo/manifesto.txt`. Alterar um deles é uma mudança que afeta todos os projetos, e deve vir com nota no `CHANGELOG.md`.
+- `skills/` e `scripts/` não são copiados para os projetos.
+
 Para adotar o processo em um projeto, use a skill `adotar-processo`. Ela segue o manifesto em `skills/adotar-processo/manifesto.txt`.
