@@ -10,7 +10,7 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 ## Entrada
 
 - Caminho do projeto (ou nome, para o modo `novo`) e o modo: `novo`, `existente` ou `atualizar`.
-- Autorização explícita na invocação para cada ação que altera o GitHub: criar repositório, criar ou alterar labels, configurar branch, abrir PR, abrir issue e copiar skills de usuário para aposentados.
+- Autorização explícita na invocação para cada ação que altera o GitHub: criar repositório, criar ou alterar labels, configurar branch, abrir PR, e abrir issue.
 
 ## Pré-condições (todos os modos)
 

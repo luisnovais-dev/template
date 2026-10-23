@@ -253,7 +253,7 @@ Texto da organização em pt-BR. Identificadores (código, pastas, tokens, chave
 
 - **A autorização vale para a invocação.** Quem invoca uma skill com a ação explícita já autorizou aquela ação.
 - **Única exceção permanente:** a matriz de ambientes da Configuração. Uma célula marcada como `sim` dispensa nova autorização para a ação correspondente, naquele ambiente. Nenhuma outra configuração versionada concede autorização. Produção nunca é pré-autorizada.
-- **Ações que exigem instrução explícita na invocação:** publicar issue, publicar comentário, abrir PR, aplicar label de aprovação, criar ou alterar label, squash merge, fechar épico, apagar branch remota ou local, remover worktree, remover arquivos, copiar ou aposentar skills de usuário, qualquer ação em produção e qualquer deploy fora da matriz.
+- **Ações que exigem instrução explícita na invocação:** publicar issue, publicar comentário, abrir PR, aplicar label de aprovação, criar ou alterar label, squash merge, fechar épico, apagar branch remota ou local, remover worktree, remover arquivos, qualquer ação em produção e qualquer deploy fora da matriz.
 - **Bypass de proteção de branch ou de checks obrigatórios** só acontece com autorização explícita do mantenedor na própria invocação, e somente se a plataforma oferecer esse mecanismo ao usuário. O agente não contorna proteção por conta própria.
 - **O bypass administrativo nunca cobre** checks obrigatórios, conflitos, achados pendentes ou mudanças destrutivas.
 - Uma etapa autorizada é executada até o fim, sem pausas por cautela, exceto por bloqueio real (decisão que a Spec não cobre).
@@ -310,7 +310,7 @@ Falhas de gate confirmadas em um checkout limpo do main remoto são registradas 
 
 ## Acúmulo
 
-Artefatos antigos (specs, relatórios, skills copiadas e código sem uso) são retirados do repositório. A cópia vai para a raiz de aposentados (`raiz_aposentados` da Configuração), fora do repositório, e o original só é removido com lista e confirmação. Código legado só sai com prova de não uso. Skills de usuário que conflitam com o processo são copiadas para essa raiz pelo instalador, com `--aposentar`.
+Artefatos antigos (specs, relatórios, skills copiadas e código sem uso) são retirados do repositório. A cópia vai para a raiz de aposentados (`raiz_aposentados` da Configuração), fora do repositório, e o original só é removido com lista e confirmação. Código legado só sai com prova de não uso.
 
 ## Worktrees e branches
 
