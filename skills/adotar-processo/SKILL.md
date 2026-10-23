@@ -26,6 +26,11 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
    - `new`: crie só se o projeto não tiver o arquivo.
 2. Preencha a seção Configuração de `docs/PROCESSO.md` com os valores reais do projeto. Preencha `processo_versao` com a versão do template (ver `CHANGELOG.md`). Nunca deixe placeholder onde a skill que dependa dele seria executada. Os valores de `comandos`, `ambientes` e `stack` vêm do projeto, não do template.
 3. Nunca copie `skills/` para o projeto, nem `scripts/verificar-template.sh`.
+3a. **Skills encontradas no projeto.** Antes de remover qualquer skill, liste as pastas de `skills/`, `.claude/skills/`, `.agents/skills/` e `.opencode/skills/` e classifique cada uma conforme `docs/PROCESSO.md` (seção Skills):
+   - **do processo:** o nome é o de uma pasta de `skills/` do template, ou `higiene-git`. Sai do projeto, com a lista confirmada pelo mantenedor (pasta e link);
+   - **própria do projeto:** qualquer outro nome. Nunca é removida. Se estiver em `skills/`, mova-a com `git mv skills/<nome> .agents/skills/<nome>` e recrie o link `.claude/skills/<nome>` → `../../.agents/skills/<nome>` (crie a pasta `.claude/skills/` antes, porque o git a remove quando os links antigos saem). Se já estiver em `.agents/skills/`, deixe onde está e só confira o link;
+   - **conflito:** própria com o nome de uma skill do processo. Pare e peça decisão (renomear ou descartar).
+   Depois, confira que cada link em `.claude/skills/` resolve.
 4. Adicione os arquivos por caminho explícito e revise o diff. Commit com mensagem descritiva.
 5. Labels: liste os labels atuais (`gh label list`) e compare com `.github/labels.yml`. Criar ou alterar labels exige autorização na invocação. A normalização segue a seção `remarcar` do manifesto: um label em uso é **remarcado** para o correspondente e só depois removido. Os labels da seção `remover_apos_remarcacao` são removidos somente com lista confirmada. `duplicate`, `invalid` e `wontfix` são mantidos. Nenhum label em uso é removido antes da remarcação. Label sem correspondência vai para decisão do mantenedor.
 6. Configuração de branch: com autorização, ligue `delete_branch_on_merge` no repositório. Branches com PR mesclada são removidas. Branches sem PR são listadas para decisão, nunca apagadas.
@@ -82,6 +87,7 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 ## Não faça
 
 - Não copie `skills/` nem o script de verificação do template para o projeto.
+- Não remova skill própria do projeto.
 - Não altere código de aplicação nesta skill.
 - Não crie repositório, label, configuração de branch, workflow ou PR sem autorização na invocação.
 - Não apague branch, label ou arquivo sem lista e confirmação.

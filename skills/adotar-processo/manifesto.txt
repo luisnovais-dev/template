@@ -4,7 +4,8 @@
 #   merge  o projeto já tem o arquivo: mescla as linhas do template sem apagar as do projeto
 #   new    cria a partir do template somente se o projeto não tiver o arquivo
 #
-# Não entra: skills/ (são instaladas por máquina, ver instalar-processo),
+# Não entra: skills/ (as do processo são instaladas por máquina, ver instalar-processo;
+# as próprias do projeto ficam em .agents/skills/ do projeto, ver docs/PROCESSO.md#skills),
 # scripts/verificar-template.sh (manutenção do template), README.md (é do projeto),
 # .claude/ (links de harness), CHANGELOG.md (é do template).
 
