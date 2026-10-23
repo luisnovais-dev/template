@@ -1,42 +1,74 @@
-name: Epic
-description: Group several independent deliveries under one theme. Each item becomes a child issue.
+name: Épico
+description: Agrupar entregas que formam uma capacidade usável pelo consumidor real. Cada item vira um ticket filho.
 title: "[epic] "
 labels:
   - type:epic
 body:
   - type: textarea
-    id: context
+    id: contexto
     attributes:
-      label: Context
-      description: Explain the current behavior, the user need and why the items belong to the same theme.
+      label: Contexto
+      description: Situação atual, necessidade do usuário e por que os itens pertencem à mesma capacidade.
+    validations:
+      required: true
+  - type: input
+    id: dono
+    attributes:
+      label: Dono do épico
+      description: Pessoa responsável pelo plano e pelo fechamento do épico.
     validations:
       required: true
   - type: textarea
-    id: requirements
+    id: cenarios
     attributes:
-      label: Requirements
-      description: Describe the expected behavior and relevant constraints for the whole theme.
+      label: Cenários
+      description: Cenários de aceite em Given/When/Then. O épico é demonstrável pelo consumidor real.
+      placeholder: |
+        Dado que <contexto>
+        Quando <ação do usuário>
+        Então <resultado observável>
     validations:
       required: true
   - type: textarea
-    id: acceptance
+    id: suite_aceite
     attributes:
-      label: Acceptance criteria
-      description: List the conditions that must be true for the epic to be complete.
+      label: Suíte de aceite
+      description: Qual teste E2E prova a capacidade. Será escrito no primeiro ticket, marcado como pendente, e ativado no ticket que fecha o épico.
+    validations:
+      required: true
+  - type: textarea
+    id: grafo
+    attributes:
+      label: Grafo de tickets por papel
+      description: Tickets por papel (contrato, persistência, regra, interface, integração e aceite), com as dependências entre eles.
+      placeholder: |
+        - contrato: <título> (bloqueia: -)
+        - persistência: <título> (bloqueado por: contrato)
+        - interface: <título> (bloqueado por: contrato)
+  - type: textarea
+    id: contrato
+    attributes:
+      label: Esboço do contrato
+      description: Preencha quando houver fronteira entre front e back. Descreva a interface compartilhada.
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite do épico
+      description: Condições que precisam ser verdadeiras para o épico fechar, incluindo a suíte de aceite verde na main integrada.
     validations:
       required: true
   - type: textarea
     id: checklist
     attributes:
       label: Checklist de itens
-      description: One checklist line per child issue, in the form "- [ ] #<número> — <título>". Items not yet created use "- [ ] <título provisório>".
+      description: Uma linha por ticket filho, no formato "- [ ] #<número> — <título>". Itens ainda não criados usam "- [ ] <título provisório>".
       placeholder: |
         - [ ] #<número> — <título do item 1>
         - [ ] <título provisório do item 2>
     validations:
       required: true
   - type: textarea
-    id: out_of_scope
+    id: fora
     attributes:
       label: Fora do épico
-      description: Related items that do not belong to this theme. List them as separate issues.
+      description: Itens relacionados que não pertencem a esta capacidade. Registre-os como issues separadas.

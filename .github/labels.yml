@@ -1,0 +1,30 @@
+# Conjunto final de labels do processo. Fonte única: docs/PROCESSO.md (seção Labels).
+# Chaves em inglês (identificadores); descrições em pt-BR.
+# Aplicação: adotar-processo cria ou atualiza estes labels. Remoção de label em uso
+# exige remarcação antes (ver docs/PROCESSO.md).
+
+labels:
+  - name: "type:feature"
+    color: "a2eeef"
+    description: "Funcionalidade nova"
+  - name: "type:bug"
+    color: "d73a4a"
+    description: "Correção de comportamento incorreto"
+  - name: "type:docs"
+    color: "0075ca"
+    description: "Mudança somente de documentação"
+  - name: "type:epic"
+    color: "5319e7"
+    description: "Agrupamento de entregas que formam uma capacidade"
+  - name: "type:enhancement"
+    color: "84b6eb"
+    description: "Melhoria de funcionalidade existente"
+  - name: "status:approved"
+    color: "0e8a16"
+    description: "Spec aprovada pelo mantenedor"
+  - name: "size:exception"
+    color: "b60205"
+    description: "PR acima do teto de tamanho, com justificativa"
+
+repository:
+  delete_branch_on_merge: true

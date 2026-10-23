@@ -52,6 +52,28 @@ verificar_yaml() {
   done
 }
 
+# 2b. Labels usados pelos formulários devem existir no manifesto .github/labels.yml.
+verificar_labels() {
+  [ -e .github/labels.yml ] || return
+  command -v python3 >/dev/null 2>&1 || return
+  local saida
+  saida=$(python3 - <<'PY' 2>&1
+import glob, sys, yaml
+manifesto = yaml.safe_load(open(".github/labels.yml", encoding="utf-8"))
+existentes = {item["name"] for item in manifesto.get("labels", [])}
+for arq in glob.glob(".github/ISSUE_TEMPLATE/*.yml"):
+    dados = yaml.safe_load(open(arq, encoding="utf-8")) or {}
+    usados = dados.get("labels") or []
+    for label in usados:
+        if label not in existentes:
+            print(f"label {label} de {arq} ausente em .github/labels.yml")
+PY
+)
+  if [ -n "$saida" ]; then
+    while IFS= read -r linha; do falha "$linha"; done <<< "$saida"
+  fi
+}
+
 # 3. Frontmatter de cada skill: name igual ao nome da pasta, minúsculas e hífens, e description presente.
 verificar_skills() {
   local arq pasta nome
@@ -133,6 +155,7 @@ verificar_segredos() {
 
 verificar_links
 verificar_yaml
+verificar_labels
 verificar_skills
 verificar_links_simbolicos
 verificar_env_versionado
