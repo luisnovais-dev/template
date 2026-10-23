@@ -333,7 +333,12 @@ O processo usa a sessão `gh` ativa (`gh auth status`). A conta pode variar por 
 
 ## Skills
 
-As etapas do processo são executadas por skills. As skills não são copiadas para os projetos: são instaladas por máquina com `instalar-processo`, por links.
+As etapas do processo são executadas por skills. Há duas classes:
+
+- **Skill do processo:** uma pasta de `skills/` do template (e a antiga `higiene-git`). Não é copiada para os projetos: é instalada por máquina com `instalar-processo`, por links.
+- **Skill própria do projeto:** qualquer outra skill que o projeto tenha, por exemplo um wrapper de deploy ou um roteiro de smoke. Fica no projeto, em `.agents/skills/<nome>/`, que Codex e OpenCode leem e o Hermes lê depois de `hermes skills trust`. Para o Claude, `.claude/skills/<nome>` é um link relativo para `../../.agents/skills/<nome>`.
+
+A adoção nunca remove uma skill própria do projeto. Uma skill própria com o mesmo nome de uma skill do processo é conflito, e vai para decisão do mantenedor.
 
 Se as skills não estiverem disponíveis no ambiente de execução (por exemplo, numa sessão na nuvem), leia o procedimento em `skills/<nome>/SKILL.md` no repositório do template, `onluis-dev/template`, antes de executar a etapa. Não invente o procedimento a partir da memória.
 
