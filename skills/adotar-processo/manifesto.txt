@@ -1,0 +1,22 @@
+# Manifesto de projeto: arquivos que o adotar-processo leva para um projeto.
+# Fonte única desta lista. Formato: <caminho> <modo>
+#   copy   copia o arquivo do template; sobrescreve só com confirmação, se o projeto já tiver o arquivo
+#   merge  o projeto já tem o arquivo: mescla as linhas do template sem apagar as do projeto
+#   new    cria a partir do template somente se o projeto não tiver o arquivo
+#
+# Não entra: skills/ (são instaladas por máquina, ver instalar-processo),
+# scripts/verificar-template.sh (manutenção do template), README.md (é do projeto),
+# .claude/ (links de harness), CHANGELOG.md (é do template).
+
+AGENTS.md                              copy
+CLAUDE.md                              new
+docs/PROCESSO.md                       copy
+.github/labels.yml                     copy
+.github/pull_request_template.md       copy
+.github/ISSUE_TEMPLATE/config.yml      copy
+.github/ISSUE_TEMPLATE/feature.yml     copy
+.github/ISSUE_TEMPLATE/melhoria.yml    copy
+.github/ISSUE_TEMPLATE/epic.yml        copy
+.github/ISSUE_TEMPLATE/bug.yml         copy
+.github/ISSUE_TEMPLATE/quality-baseline.yml copy
+.gitignore                             merge

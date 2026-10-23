@@ -1,44 +1,44 @@
-name: Bug report
-description: Report a behavior that differs from the expected behavior.
+name: Defeito
+description: Relatar um comportamento que difere do esperado.
 title: "[bug] "
 labels:
   - type:bug
 body:
   - type: textarea
-    id: context
+    id: contexto
     attributes:
-      label: Context
-      description: Describe what happens, who is affected and where it was observed.
+      label: Contexto
+      description: O que acontece, quem é afetado e onde foi observado.
     validations:
       required: true
   - type: textarea
-    id: steps
+    id: reproducao
     attributes:
-      label: Steps to reproduce
-      description: Numbered steps that reproduce the behavior on the current remote main.
+      label: Passos para reproduzir
+      description: Passos numerados que reproduzem o comportamento na main remota atual.
       placeholder: |
         1. ...
         2. ...
     validations:
       required: true
   - type: textarea
-    id: expected
+    id: esperado
     attributes:
-      label: Expected behavior
-      description: What should happen instead.
+      label: Comportamento esperado
+      description: O que deveria acontecer.
     validations:
       required: true
   - type: textarea
-    id: observed
+    id: observado
     attributes:
-      label: Observed behavior
-      description: What happens now, including error messages (without secrets or personal data).
+      label: Comportamento observado
+      description: O que acontece hoje, incluindo mensagens de erro (sem segredos nem dados pessoais).
     validations:
       required: true
   - type: textarea
-    id: acceptance
+    id: criterios
     attributes:
-      label: Acceptance criteria
-      description: Verifiable conditions that show the bug is fixed.
+      label: Critérios de aceite
+      description: Condições verificáveis que mostram que o defeito foi corrigido.
     validations:
       required: true

@@ -239,7 +239,9 @@ Não crie variantes especulativas nem camadas de abstração desnecessárias. Um
 - orientação de migração, quando aplicável;
 - decisões arquiteturais e trade-offs.
 
-Siga o idioma e a estrutura de documentação já estabelecidos no projeto. Se não houver convenção, proponha uma durante a descoberta.
+Escreva em pt-BR, com identificadores (tokens, componentes, chaves) em inglês. Os documentos ficam em `docs/design-system/`, conforme a estrutura de `docs/PROCESSO.md` (seção Gate de documentação). Se o projeto já tiver outra convenção, siga-a e registre a decisão numa ADR.
+
+O Claude Design é opcional e tem uma direção só: ou o design é feito nele e importado para o repositório, ou é feito no repositório. Seu canvas não faz parte da definição de pronto. O repositório é a única fonte de verdade da interface. Referências visuais enviadas pelo usuário são registradas em `docs/referencias/<épico-ou-issue>/` com manifesto, e o design system não as substitui.
 
 A documentação reflete decisões implementadas ou validadas, não funcionalidades planejadas apresentadas como concluídas.
 

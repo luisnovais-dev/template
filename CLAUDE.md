@@ -2,8 +2,8 @@
 
 @AGENTS.md
 
-## Específico do Claude Code
+## Claude Code
 
-- As skills são carregadas de `.claude/skills/`. Cada entrada aponta para uma pasta em `skills/` por link simbólico. Não edite a cópia em `.claude/skills/`: edite a fonte em `skills/`.
-- Worktrees criadas pelo Claude ficam em `.claude/worktrees/<nome>` e não são versionadas (ver `.gitignore`).
+- As skills do processo são instaladas nesta máquina por links em `~/.claude/skills`. Não as copie para o projeto (ver [`docs/PROCESSO.md`](docs/PROCESSO.md#skills)).
+- Worktrees criadas pelo Claude ficam em `.claude/worktrees/<nome>` e não são versionadas (ver [`docs/PROCESSO.md`](docs/PROCESSO.md#worktrees-e-branches)).
 - `.claude/settings.local.json` é local e não é versionado.

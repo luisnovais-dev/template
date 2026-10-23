@@ -1,0 +1,59 @@
+name: Melhoria
+description: Propor uma mudança em funcionalidade que já existe.
+title: "[melhoria] "
+labels:
+  - type:enhancement
+body:
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Como a funcionalidade funciona hoje e qual limitação ela tem para o usuário.
+    validations:
+      required: true
+  - type: textarea
+    id: capacidade
+    attributes:
+      label: Capacidade entregue
+      description: Quem usa e o que passa a conseguir fazer melhor, em uma frase.
+      placeholder: "Como <perfil>, passo a <ação> para <resultado>."
+    validations:
+      required: true
+  - type: textarea
+    id: requisitos
+    attributes:
+      label: Requisitos
+      description: Comportamento esperado e o que deve permanecer igual.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      description: Condições verificáveis que precisam ser verdadeiras para o ticket estar concluído.
+    validations:
+      required: true
+  - type: textarea
+    id: relacoes
+    attributes:
+      label: Relações entre tickets
+      description: Informe "Parte de #", "Bloqueado por #" e "Paralelizável com #", quando houver.
+      placeholder: |
+        Parte de: #
+        Bloqueado por: #
+        Paralelizável com: #
+  - type: textarea
+    id: areas
+    attributes:
+      label: Áreas ou arquivos que toca
+      description: Liste as áreas ou arquivos afetados. O paralelismo só vale entre tickets sem arquivos em comum.
+  - type: dropdown
+    id: risco
+    attributes:
+      label: Classificação de risco
+      description: Sensível quando envolve autenticação, dados pessoais, financeiro, migração destrutiva ou produção.
+      options:
+        - Comum
+        - Sensível
+    validations:
+      required: true
