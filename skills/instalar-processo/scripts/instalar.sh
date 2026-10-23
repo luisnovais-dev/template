@@ -19,12 +19,17 @@
 set -u
 
 MODO="plano"
-case "${1:-}" in
-  "") MODO="plano" ;;
-  --aplicar) MODO="aplicar" ;;
-  --atualizar) MODO="atualizar" ;;
-  *) echo "Uso: $0 [--aplicar|--atualizar]"; exit 64 ;;
-esac
+APOSENTAR=0
+for arg in "$@"; do
+  case "$arg" in
+    --aplicar) MODO="aplicar" ;;
+    --atualizar) MODO="atualizar" ;;
+    --aposentar) APOSENTAR=1 ;;
+    *) echo "Uso: $0 [--aplicar|--atualizar] [--aposentar]"; exit 64 ;;
+  esac
+done
+# Raiz de aposentados: fora do repositório, configurada na Configuração de docs/PROCESSO.md (raiz_aposentados).
+APOSENTADOS="${ONLUIS_APOSENTADOS_DIR:-$HOME/.local/share/onluis-dev/aposentados}"
 
 CLONE="${ONLUIS_TEMPLATE_DIR:-$HOME/.local/share/onluis-dev/template}"
 REPO="${ONLUIS_TEMPLATE_REPO:-https://github.com/onluis-dev/template.git}"
@@ -62,23 +67,24 @@ else
   fi
 fi
 
-if [ "$CLONE_EXISTE" -eq 0 ]; then
-  echo "Plano concluído: não há skills para listar até o clone existir."
-  exit 0
-fi
-
-FONTE="$CLONE/skills"
-if [ ! -d "$FONTE" ]; then
-  echo "ERRO: $FONTE não existe. O clone não é o template de processo."
-  exit 1
-fi
-
-# Skills do processo: pastas em skills/ que têm SKILL.md.
+# Sem clone (só no plano), as skills do processo não são conhecidas: a varredura
+# de skills de usuário e o Hermes continuam, e nenhum link é planejado.
 SKILLS=""
-for pasta in "$FONTE"/*/; do
-  nome=$(basename "$pasta")
-  [ -f "$pasta/SKILL.md" ] && SKILLS="$SKILLS $nome"
-done
+FONTE=""
+if [ "$CLONE_EXISTE" -eq 0 ]; then
+  echo "Clone ausente: a lista de links aparecerá depois de --aplicar. Skills de usuário são listadas abaixo."
+else
+  FONTE="$CLONE/skills"
+  if [ ! -d "$FONTE" ]; then
+    echo "ERRO: $FONTE não existe. O clone não é o template de processo."
+    exit 1
+  fi
+  # Skills do processo: pastas em skills/ que têm SKILL.md.
+  for pasta in "$FONTE"/*/; do
+    nome=$(basename "$pasta")
+    [ -f "$pasta/SKILL.md" ] && SKILLS="$SKILLS $nome"
+  done
+fi
 
 # 2. Verificação prévia de conflitos (antes de qualquer alteração).
 CONFLITOS=0
@@ -96,16 +102,36 @@ for destino in "$DEST_AGENTS" "$DEST_CLAUDE"; do
   done
 done
 
-# Skills de usuário fora do processo (informativo: ex. GentleAI). Não são apagadas.
-for destino in "$DEST_AGENTS" "$DEST_CLAUDE"; do
+# Skills de usuário fora do processo (ex.: GentleAI) em todos os diretórios conhecidos.
+# Nunca são apagadas. Com --aposentar e --aplicar, são apenas copiadas para a raiz de aposentados.
+OUTRAS=()
+for destino in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.agents/skills" \
+  "$HOME/.config/opencode/skills" "$HOME/.hermes/skills"; do
   [ -d "$destino" ] || continue
   for alvo in "$destino"/*; do
     [ -e "$alvo" ] || [ -L "$alvo" ] || continue
     nome=$(basename "$alvo")
-    case " $SKILLS " in *" $nome "*) continue ;; esac
+    case " $SKILLS " in *" $nome "*) [ -L "$alvo" ] && continue ;; esac
+    if [ -L "$alvo" ] && [ "$(readlink -f "$alvo")" = "$(readlink -f "$FONTE/$nome" 2>/dev/null)" ]; then
+      continue
+    fi
+    OUTRAS+=("$alvo")
     echo "Outra skill de usuário: $alvo (candidata a aposentar; não é removida por este script)"
   done
 done
+
+if [ "$APOSENTAR" -eq 1 ] && [ "$MODO" = "aplicar" ] && [ "${#OUTRAS[@]}" -gt 0 ]; then
+  for alvo in "${OUTRAS[@]}"; do
+    rel="${alvo#"$HOME"/}"
+    destino_ap="$APOSENTADOS/$(dirname "$rel")"
+    mkdir -p "$destino_ap"
+    if [ -e "$destino_ap/$(basename "$alvo")" ]; then
+      echo "Aposentados: já existe $destino_ap/$(basename "$alvo"). Não sobrescrito."
+    else
+      cp -R -L "$alvo" "$destino_ap/" && echo "Cópia em aposentados: $destino_ap/$(basename "$alvo") (original mantido)"
+    fi
+  done
+fi
 
 if [ "$CONFLITOS" -gt 0 ]; then
   echo "Parado: $CONFLITOS conflito(s). Resolva antes de aplicar."

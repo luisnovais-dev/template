@@ -26,7 +26,7 @@ Instala as skills do processo por máquina, sem copiá-las para os projetos. Os 
    ```
 2. Leia o plano. Ele lista o que será criado, os conflitos e as skills de usuário que existem fora do processo.
 3. Se houver **conflito**, pare. Um conflito é uma skill de mesmo nome que já existe no destino e não é link deste clone. O script não sobrescreve nada e sai com código 2. Mostre o conflito ao mantenedor e pergunte o que fazer: manter a skill existente, aposentá-la, ou renomear.
-4. Se houver **outras skills de usuário** (por exemplo, da instalação GentleAI), liste-as para decisão. Elas são candidatas a aposentar. Não as apague sem confirmação, e a cópia vai para a raiz de aposentados fora do repositório.
+4. O script varre também `~/.claude/skills`, `~/.codex/skills`, `~/.agents/skills`, `~/.config/opencode/skills` e `~/.hermes/skills`, e lista as **outras skills de usuário** (por exemplo, da instalação GentleAI), que são candidatas a aposentar. Para aposentá-las, use `--aposentar` junto com `--aplicar`: o script **copia** cada uma para a raiz de aposentados (`~/.local/share/onluis-dev/aposentados`, ou `ONLUIS_APOSENTADOS_DIR`), mantendo a estrutura de pastas. O original não é apagado. Se já houver cópia no destino, ela não é sobrescrita. Remover o original é decisão separada, com lista e confirmação do mantenedor.
 5. Com o plano aprovado, aplique:
    ```bash
    skills/instalar-processo/scripts/instalar.sh --aplicar
