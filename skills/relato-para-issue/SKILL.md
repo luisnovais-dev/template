@@ -22,7 +22,7 @@ Converte um relato em uma issue acionável. Não altera código nem cria branch.
    - **resultado esperado:** o que ela passaria a conseguir;
    - **capacidade:** "Como <perfil>, consigo <ação> para <resultado>";
    - **cenários derivados:** Given/When/Then, um por caminho relevante;
-   - **tipo:** `bug` (comportamento incorreto), `ticket` (uma entrega) ou `épico` (várias entregas independentes que formam uma capacidade).
+   - **tipo:** `bug` (comportamento incorreto), `ticket` (uma entrega) ou `épico` (várias entregas que, juntas, formam uma capacidade que o usuário consegue usar do início ao fim. Podem ser entregues em PRs separados, em tickets que se dependem).
 3. Hipóteses viram pergunta em aberto. Não as apresente como fato.
 4. Temas misturados são separados em issues distintas.
 5. Busque duplicatas: `gh issue list --state all --search "<termos>"`. Se houver duplicata aberta, pare e reporte. Se houver duplicata fechada relevante, cite-a.

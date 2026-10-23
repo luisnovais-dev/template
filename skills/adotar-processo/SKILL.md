@@ -1,6 +1,6 @@
 ---
 name: adotar-processo
-description: Adota o processo de trabalho num projeto, em três modos. "novo" conduz a Fase 0 de um projeto do zero, "existente" adequa um projeto que já tem código e histórico, e "atualizar" leva um projeto já adotado para a versão atual do processo. Copia só os arquivos do manifesto, aplica os labels e a configuração de branch com confirmação, e evita burocracia. Use quando o mantenedor pedir para adotar, adequar ou atualizar o processo num projeto.
+description: Adota o processo de trabalho num projeto, em três modos. "novo" cria o repositório e conduz a Fase 0 de um projeto do zero, "existente" adequa um projeto com código e histórico, e "atualizar" leva um projeto já adotado para a versão atual do processo. Copia só os arquivos do manifesto, aplica labels e configuração de branch com confirmação, e evita burocracia. Use quando o mantenedor pedir para adotar, adequar ou atualizar o processo num projeto.
 ---
 
 # Adotar processo
@@ -9,8 +9,8 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 
 ## Entrada
 
-- Caminho do projeto e o modo: `novo`, `existente` ou `atualizar`.
-- Autorização explícita na invocação para cada ação que altera o GitHub (labels, configuração de branch, issue).
+- Caminho do projeto (ou nome, para o modo `novo`) e o modo: `novo`, `existente` ou `atualizar`.
+- Autorização explícita na invocação para cada ação que altera o GitHub: criar repositório, criar ou alterar labels, configurar branch, abrir PR, abrir issue e copiar skills de usuário para aposentados.
 
 ## Pré-condições (todos os modos)
 
@@ -27,25 +27,31 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 2. Preencha a seção Configuração de `docs/PROCESSO.md` com os valores reais do projeto. Preencha `processo_versao` com a versão do template (ver `CHANGELOG.md`). Nunca deixe placeholder onde a skill que dependa dele seria executada. Os valores de `comandos`, `ambientes` e `stack` vêm do projeto, não do template.
 3. Nunca copie `skills/` para o projeto, nem `scripts/verificar-template.sh`.
 4. Adicione os arquivos por caminho explícito e revise o diff. Commit com mensagem descritiva.
-5. Labels: liste os labels atuais do repositório (`gh label list`) e compare com `.github/labels.yml`. Criar ou alterar labels exige autorização na invocação. Normalização obrigatória: um label em uso que não existe no conjunto final é **remarcado** para o correto, e só depois é removido. Nenhum label em uso é removido antes da remarcação. Label sem equivalente vai para decisão do mantenedor.
+5. Labels: liste os labels atuais (`gh label list`) e compare com `.github/labels.yml`. Criar ou alterar labels exige autorização na invocação. A normalização segue a seção `remarcar` do manifesto: um label em uso é **remarcado** para o correspondente e só depois removido. Os labels da seção `remover_apos_remarcacao` são removidos somente com lista confirmada. `duplicate`, `invalid` e `wontfix` são mantidos. Nenhum label em uso é removido antes da remarcação. Label sem correspondência vai para decisão do mantenedor.
 6. Configuração de branch: com autorização, ligue `delete_branch_on_merge` no repositório. Branches com PR mesclada são removidas. Branches sem PR são listadas para decisão, nunca apagadas.
 7. Abra **uma** PR com a adoção, usando `abrir-pr` com a seção de documentação preenchida. Não crie PR por arquivo.
 
 ## Modo `novo`: Fase 0 de projeto do zero
 
-1. Pergunte, em um bloco só, o que a Configuração pede: gerenciador de pacotes, lockfile, linguagens, frameworks, serviços locais, comandos de lint, testes, integração, typecheck, build, smoke e E2E, ferramenta visual, comando de ambiente local e a matriz de ambientes. Diga o que for `pendente` quando o projeto ainda não tiver.
-2. Crie a estrutura de `docs/` declarada em `docs/PROCESSO.md` (seção Gate de documentação), com `docs/dominio.md`, `docs/arquitetura.md` e `docs/ambientes.md` como esqueletos curtos, e `docs/adr/` com um README-índice.
-3. Crie o `README.md` do projeto com o que o projeto faz, para quem e o status. Uma linha de descrição basta no início.
-4. Não crie épicos ou tickets de adequação neste modo, a não ser que o mantenedor peça.
+1. **Repositório.** Se a pasta não é git, rode `git init -b main`. Criar o repositório no GitHub exige autorização na invocação, com nome e visibilidade informados. Sem autorização, pare nesse ponto e peça.
+2. **Configuração.** Pergunte, em um bloco só, o que a Configuração pede: gerenciador de pacotes, lockfile, linguagens, frameworks, serviços locais, comandos de lint, testes, integração, typecheck, build, smoke e E2E, ferramenta visual, comando de ambiente local, `env_check` e a matriz de ambientes. Diga o que for `pendente` quando o projeto ainda não tiver.
+3. **Estrutura.** Crie a estrutura de `docs/` declarada em `docs/PROCESSO.md` (seção Gate de documentação): `docs/dominio.md`, `docs/arquitetura.md` e `docs/ambientes.md` como esqueletos curtos, e `docs/adr/` com um índice.
+4. **README.** Crie o `README.md` com o que o projeto faz, para quem e o status, em uma linha no início.
+5. **ADRs iniciais.** Proponha como ADRs, com status "Proposto", as decisões de stack, estrutura de pastas, autenticação, deploy e ambientes. Cada uma vai para `docs/adr/` como "Aceito" somente depois do aceite do mantenedor, na conversa.
+6. **CI.** Proponha um workflow mínimo que roda os comandos configurados (lint, testes, build). Criá-lo exige aprovação do mantenedor. Se ainda não houver comandos, registre a CI como "não configurada", sem marcar nada como aprovado.
+7. **Harness.** Garanta que o `CLAUDE.md` do projeto importe `AGENTS.md`. Oriente a instalação das skills por máquina com `instalar-processo`.
+8. **Identidade de teste.** Documente em `docs/ambientes.md` os usuários sintéticos por perfil para local e preview, e o teste que prova a indisponibilidade em produção. Não crie usuário real nem credencial.
+9. **Épico de walking skeleton.** Proponha um épico que entrega a fatia ponta a ponta mínima (uma tela ou rota, uma persistência, o deploy de preview), com a suíte de aceite pendente. Criá-lo exige autorização na invocação. As filhas são escolhidas pelo mantenedor.
 
 ## Modo `existente`: adequação de projeto com código
 
-1. Inventário somente leitura: stack, comandos reais (lint, testes, build), ambientes, pastas de documentação existentes e labels. Não altere nada nesta etapa.
-2. Infira as decisões já tomadas (ADRs) a partir do código, do histórico e da documentação. Proponha a lista de ADRs para aprovação. Não escreva ADR sem aceite.
-3. Preencha a Configuração com os comandos reais. Se um comando não existir, registre `pendente`.
-4. Não reorganize o projeto em massa. Mudança cosmética, renomeação de pastas e reformatação não entram nesta adoção.
-5. Trabalho real de adequação (por exemplo, criar a suíte de aceite, corrigir gate que falha, documentar uma ADR importante) vira **no máximo um épico de adequação**, com filhas escolhidas pelo mantenedor. Nada cosmético vira issue.
-6. Se a adoção for só mecânica (manifesto, Configuração e labels), faça uma PR única.
+1. **Inventário somente leitura.** Stack, comandos reais (lint, testes, build), ambientes, pastas de documentação existentes, labels e acúmulo (branches antigas, arquivos de relatório, specs e skills copiadas). Não altere nada nesta etapa.
+2. **ADRs inferidas.** Infira as decisões já tomadas a partir do código, do histórico e da documentação. Proponha a lista para aprovação. Não escreva ADR sem aceite.
+3. **Configuração.** Preencha com os comandos reais. Se um comando não existir, registre `pendente`.
+4. **Acúmulo.** Liste o acúmulo para decisão. A retirada segue o procedimento de `docs/PROCESSO.md` (seção Acúmulo): a cópia vai para `raiz_aposentados`, fora do repositório, e o original só é removido com lista e confirmação. Sem confirmação, nada sai.
+5. **Sem reorganização em massa.** Mudança cosmética, renomeação de pastas e reformatação não entram nesta adoção.
+6. **Trabalho real de adequação** (por exemplo, criar a suíte de aceite, corrigir gate que falha, documentar uma ADR importante) vira **no máximo um épico de adequação**, com filhas escolhidas pelo mantenedor. Nada cosmético vira issue.
+7. Se a adoção for só mecânica (manifesto, Configuração e labels), faça uma PR única.
 
 ## Modo `atualizar`: projeto já adotado
 
@@ -69,13 +75,15 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 - Lista de arquivos copiados, mesclados e criados, com o modo de cada um.
 - Labels criados, remarcados, removidos e pendentes de decisão.
 - Configuração pendente, com o que falta preencher.
-- ADRs propostas (modo `existente`).
+- ADRs propostas (modos `novo` e `existente`), e o que foi aceito.
+- Acúmulo listado e o que foi copiado para a raiz de aposentados.
 - PR aberta, ou motivo de não abrir.
 
 ## Não faça
 
 - Não copie `skills/` nem o script de verificação do template para o projeto.
 - Não altere código de aplicação nesta skill.
-- Não crie label, altere configuração de branch ou abra PR sem autorização na invocação.
-- Não apague branch nem label sem lista e confirmação.
+- Não crie repositório, label, configuração de branch, workflow ou PR sem autorização na invocação.
+- Não apague branch, label ou arquivo sem lista e confirmação.
 - Não deixe placeholder em `comandos` ou `ambientes` sem sinalizar.
+- Não crie usuário real ou credencial de teste fora de local e preview.

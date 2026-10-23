@@ -15,11 +15,11 @@ Decide se a PR pode ser mesclada e, se pode, faz o squash.
 ## Procedimento
 
 1. Compare o HEAD revisado pelo último review válido com o HEAD atual da PR. O SHA vem do marcador do review. Se houver commits posteriores, o review anterior não basta: reporte que novo review é necessário.
-2. Leia os reviews nas três fontes (reviews formais, comentários da PR e comentários inline). Um review é válido nas condições de `docs/PROCESSO.md` (seção Review como comentário). Não considere COMMENTED como bloqueio automático.
+2. Leia os reviews nas três fontes (reviews formais, comentários da PR e comentários inline), aplicando a regra de validade de `docs/PROCESSO.md` (seção Review como comentário). Não considere COMMENTED como bloqueio automático.
 3. Confirme que a issue e a Spec correspondem à implementação entregue.
 4. Confirme que todos os findings bloqueantes anteriores estão resolvidos e verificados pelo revisor no re-review.
 5. Confirme a documentação: a seção "Documentação" da PR está preenchida, e os documentos citados foram de fato atualizados.
-6. Se a PR fecha um épico (`Closes #` de um épico), confirme que a suíte de aceite do épico está ativada e verde na branch integrada. Sem ela verde, a PR não fecha o épico.
+6. Verifique se a PR é o último ticket filho aberto do épico ao qual pertence ("Parte de #<épico>" na issue). Se for, aplique a seção **Fechamento do épico** de `docs/PROCESSO.md`: a suíte de aceite do épico precisa estar ativada e verde na branch integrada, a checklist do épico não pode ter item pendente, e o flag de feature precisa estar tratado. Sem isso, o épico não fecha. Informe "fecha o épico" no resultado. O fechamento em si só ocorre com instrução explícita na invocação.
 7. Verifique o estado dos checks. Se a API não permitir consultar as regras de proteção de `main`, registre "Required checks: NOT VERIFIED — insufficient repository/API permission". Não infira quais checks são obrigatórios.
 8. Se a plataforma reportar `REVIEW_REQUIRED`, trate como bloqueio da plataforma e siga o procedimento de `docs/PROCESSO.md` (seção Bloqueios da plataforma). Não contorne sem autorização.
 9. Verifique conflitos com `main`.

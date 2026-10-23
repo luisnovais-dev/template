@@ -20,7 +20,7 @@ Leia os findings de três fontes da PR:
 2. comentários da PR;
 3. comentários inline.
 
-Um review é válido se for formal de identidade diferente da do autor da PR, se tiver o marcador `<!-- review-pr ... -->` (de qualquer identidade), ou se o mantenedor o declarar como review. Use o SHA do marcador para saber se o review ainda vale (ver `docs/PROCESSO.md`, seção Review como comentário).
+A regra de validade de um review está em `docs/PROCESSO.md`, seção Review como comentário. Aplique-a, e use o SHA do marcador para saber se o review ainda vale.
 
 ## Procedimento
 

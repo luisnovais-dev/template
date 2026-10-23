@@ -15,13 +15,20 @@ Executa a Spec aprovada. A Spec é a fonte de verdade.
 ## Pré-condições
 
 1. A Spec está aprovada e registrada na issue, com o label de aprovação (`label_aprovacao` da Configuração de `docs/PROCESSO.md`).
-2. Você está numa worktree dedicada, criada a partir do main remoto atualizado. Nunca no checkout principal.
+2. Você está numa worktree dedicada da issue, a partir do main remoto atualizado. Nunca no checkout principal. Antes de criar branch ou worktree, procure a que já existe para a issue (ver Procedimento, passo 0).
 3. `git status` está limpo. Se houver alterações prévias, classifique cada caminho antes de qualquer ação. Não descarte nada sem determinar a origem.
 4. A configuração de comandos e de ambientes (Configuração de `docs/PROCESSO.md`) está preenchida. Se houver placeholder no que a Spec usa, pare e peça o valor.
 
 ## Procedimento
 
+0. Localize o trabalho já existente da issue `<n>`:
+   - `git worktree list` e `git branch --list "*<n>*"` (e a branch com o prefixo da issue);
+   - se existir branch ou worktree da issue, reutilize-a, depois de confirmar que ela está no estado esperado. Não crie uma segunda branch para a mesma issue sem decisão do mantenedor;
+   - se houver branch sem número da issue ligada à mesma Spec, pare e pergunte antes de qualquer ação.
+   - Se não existir nada, crie a branch com o prefixo e o número da issue, por exemplo `docs/<n>-<descrição>`, em worktree própria.
 1. Atualize referências: `git fetch origin --prune`. Confirme a relação da branch com o main remoto.
+   - Ao criar a branch, use `git worktree add -b <branch> <caminho> origin/main --no-track`, para que ela não rastreie a `main`.
+   - Publique só a própria branch, com `git push -u origin <branch>`. Nunca faça push para `main`.
 2. Crie o registro de progresso em `.agent/progresso.md` (não versionado). Ele é atualizado a cada Task.
 3. Se o ticket pertence a um épico, escreva o teste de aceitação do épico na primeira Task que o permitir, marcado como pendente com a tag do épico. Ele é ativado somente no ticket que fecha o épico.
 4. Antes de criar um mecanismo de teste ou verificação, procure o que já existe no projeto. Mecanismo novo é versionado, declarado na Configuração, documentado e genérico. Nunca crie script ou configuração por PR ou issue.

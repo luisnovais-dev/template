@@ -54,7 +54,12 @@ O review é publicado como comentário da PR, com a primeira linha de marcador e
 REVIEW STATUS: <NO BLOCKING FINDINGS | BLOCKING FINDINGS | ...>
 ```
 
-Publique com a sessão `gh` ativa, quando o ambiente permitir. Se a identidade for a mesma do autor da PR, o review aparece como COMMENTED. Com o marcador, ele continua válido (ver `docs/PROCESSO.md`, seção Review como comentário).
+Publique com a sessão `gh` ativa, quando o ambiente permitir:
+
+- se a identidade for **diferente** da do autor da PR, publique como review formal com `gh pr review`: `--approve` quando não houver blocker, `--request-changes` quando houver blocker, e o marcador e a linha de status no corpo;
+- se a identidade for **a mesma** do autor, publique como comentário (`gh pr comment`), com o marcador. Ele aparece como COMMENTED, e continua válido (ver `docs/PROCESSO.md`, seção Review como comentário).
+
+Nunca publique sem o marcador, nem como review formal da própria PR.
 
 ## Não faça
 
