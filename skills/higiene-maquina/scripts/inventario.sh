@@ -30,6 +30,9 @@ if [ "${#RAIZES[@]}" -eq 0 ]; then
   RAIZES=("$HOME")
 fi
 
+# Caminhos que a remoção apagaria (SEGURO_REMOVER e LIXO), para somar ESPACO_LIBERAVEL.
+REMOVIVEIS=()
+
 # Repositórios: diretórios com .git, em qualquer nível até 4.
 REPOS=()
 for raiz in "${RAIZES[@]}"; do
@@ -216,6 +219,76 @@ detalhar_pendentes() {
   fi
 }
 
+# Uma linha por worktree do repositório: caminho e branch (ou DETACHED).
+listar_worktrees() {
+  git -C "$1" worktree list --porcelain | awk '
+    /^worktree /{ if (p != "") print p "\t" (b == "" ? "DETACHED" : b); p=substr($0,10); b="" }
+    /^branch /{ b=substr($0,8); sub("refs/heads/","",b) }
+    END{ if (p != "") print p "\t" (b == "" ? "DETACHED" : b) }'
+}
+
+# Espaço que a remoção liberaria para os caminhos recebidos. Conta cada inode uma vez, e só
+# quando todos os seus links estão dentro do conjunto. Sem python3, soma o du de cada caminho
+# e marca como estimativa, porque hard link entre caminhos pode ser contado duas vezes.
+PY_LIBERAVEL=$(cat <<'PY'
+import os, stat, sys
+from collections import Counter
+caminhos = [p for p in sys.stdin.read().split("\0") if p]
+vistos = Counter()
+info = {}
+def registra(s):
+    k = (s.st_dev, s.st_ino)
+    vistos[k] += 1
+    info[k] = (s.st_nlink, s.st_blocks * 512)
+for c in caminhos:
+    try:
+        s = os.lstat(c)
+    except OSError:
+        continue
+    if stat.S_ISDIR(s.st_mode):
+        for raiz, dirs, arqs in os.walk(c):
+            for nome in arqs + dirs:
+                try:
+                    t = os.lstat(os.path.join(raiz, nome))
+                except OSError:
+                    continue
+                if stat.S_ISREG(t.st_mode):
+                    registra(t)
+    elif stat.S_ISREG(s.st_mode):
+        registra(s)
+total = sum(b for k, (n, b) in info.items() if vistos[k] >= n)
+x, i = float(total), 0
+unidades = ["B", "KB", "MB", "GB", "TB"]
+while x >= 1024 and i < len(unidades) - 1:
+    x /= 1024
+    i += 1
+print("%d B" % total if i == 0 else "%.1f %s" % (x, unidades[i]))
+PY
+)
+
+espaco_liberavel() {
+  if [ "$#" -eq 0 ]; then
+    echo "0 B"
+    return
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    printf '%s\0' "$@" | python3 -c "$PY_LIBERAVEL" 2>/dev/null && return
+  fi
+  local total=0 p kb
+  for p in "$@"; do
+    kb=$(du -sk "$p" 2>/dev/null | cut -f1)
+    total=$((total + ${kb:-0}))
+  done
+  echo "$total KB (estimativa, sem python3)"
+}
+
+# Aviso para worktree com store de pnpm: o store é compartilhado e a remoção não o libera.
+aviso_store() {
+  if [ -d "$1/node_modules/.pnpm" ]; then
+    echo "  AVISO_STORE: $1 usa store pnpm compartilhado. A remoção não libera o store."
+  fi
+}
+
 for repo in "${UNICOS[@]}"; do
   echo "== REPOSITÓRIO: $repo"
 
@@ -242,11 +315,7 @@ for repo in "${UNICOS[@]}"; do
   REMOTO_VIVO=$(git -C "$repo" ls-remote --heads origin 2>/dev/null | awk '{print $1}')
 
   # Worktrees (inclui HEAD solto). Uma linha por worktree: caminho, branch ou DETACHED.
-  git -C "$repo" worktree list --porcelain | awk '
-    /^worktree /{ if (p != "") print p "\t" (b == "" ? "DETACHED" : b); p=substr($0,10); b="" }
-    /^branch /{ b=substr($0,8); sub("refs/heads/","",b) }
-    END{ if (p != "") print p "\t" (b == "" ? "DETACHED" : b) }' \
-    | while IFS=$'\t' read -r caminho branch; do
+  while IFS=$'\t' read -r caminho branch; do
       if [ "$caminho" = "$repo" ]; then
         continue
       fi
@@ -259,7 +328,9 @@ for repo in "${UNICOS[@]}"; do
       if [ "$branch" = "DETACHED" ]; then
         ref=$(git -C "$caminho" rev-parse HEAD 2>/dev/null)
         if [ "$sujo" -eq 0 ] && git -C "$repo" merge-base --is-ancestor "$ref" "$base_ref" 2>/dev/null; then
-          echo "  SEGURO_REMOVER: worktree $caminho (HEAD solto já integrado, limpa, $tamanho)"
+          REMOVIVEIS+=("$caminho")
+          echo "  SEGURO_REMOVER: worktree $caminho (HEAD solto já integrado, limpa, libera $(espaco_liberavel "$caminho"))"
+          aviso_store "$caminho"
         else
           echo "  REQUER_DECISAO: worktree $caminho (HEAD solto, alterações pendentes: $sujo, $tamanho)"
         fi
@@ -272,12 +343,14 @@ for repo in "${UNICOS[@]}"; do
         integrada=1
       fi
       if [ "$integrada" -eq 1 ] && [ "$sujo" -eq 0 ]; then
-        echo "  SEGURO_REMOVER: worktree $caminho (branch $branch integrada, limpa, $tamanho)"
+        REMOVIVEIS+=("$caminho")
+        echo "  SEGURO_REMOVER: worktree $caminho (branch $branch integrada, limpa, libera $(espaco_liberavel "$caminho"))"
+        aviso_store "$caminho"
       else
         echo "  REQUER_DECISAO: worktree $caminho (branch $branch, integrada: $integrada, alterações pendentes: $sujo, $tamanho)"
         detalhar_pendentes "$repo" "$slug" "$caminho" "$branch"
       fi
-  done
+  done < <(listar_worktrees "$repo")
 
   # Branches locais.
   git -C "$repo" for-each-ref --format='%(refname:short)' refs/heads | while IFS= read -r branch; do
@@ -327,15 +400,16 @@ for repo in "${UNICOS[@]}"; do
     echo "  PROGRESSO: $repo/.agent (registro de trabalho; não remover por esta skill)"
   fi
   # Só é LIXO o que não está versionado: arquivo rastreado nunca entra, mesmo com nome de temporário.
-  find "$repo" -maxdepth 3 \( -name '_tmp*' -o -name '*.log' -o -name 'tmp-verif-*' \) \
+  while IFS= read -r item; do
+    rel="${item#"$repo"/}"
+    if git -C "$repo" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then
+      continue
+    fi
+    REMOVIVEIS+=("$item")
+    echo "  LIXO: $rel"
+  done < <(find "$repo" -maxdepth 3 \( -name '_tmp*' -o -name '*.log' -o -name 'tmp-verif-*' \) \
     -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.claude/worktrees/*' 2>/dev/null \
-    | head -50 | while IFS= read -r item; do
-      rel="${item#"$repo"/}"
-      if git -C "$repo" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then
-        continue
-      fi
-      echo "  LIXO: $rel"
-    done | head -20
+    | head -50)
 done
 
 # Resíduos fora dos repositórios (scratch e snapshots), só listados.
@@ -348,6 +422,9 @@ for raiz in "${RAIZES[@]}"; do
         echo "  LIXO: $item ($(du -sh "$item" 2>/dev/null | cut -f1))"
       done
 done
+
+echo "== ESPAÇO"
+echo "  ESPACO_LIBERAVEL: $(espaco_liberavel ${REMOVIVEIS[@]+"${REMOVIVEIS[@]}"}) (SEGURO_REMOVER e LIXO; cada arquivo contado uma vez, só se todos os seus links estão no conjunto)"
 
 echo "== RECURSOS (informativo)"
 if command -v docker >/dev/null 2>&1; then
