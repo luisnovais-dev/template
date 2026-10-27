@@ -7,6 +7,8 @@ description: Verifica a prontidão final de uma PR contra o último review váli
 
 Decide se a PR pode ser mesclada e, se pode, faz o squash.
 
+Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/PROCESSO.md` (seção Estado real antes de agir). Se a PR estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue, pare e reporte, sem agir.
+
 ## Entrada
 
 - Número da PR e da issue.

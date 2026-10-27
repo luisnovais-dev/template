@@ -7,6 +7,8 @@ description: Implementa uma Spec aprovada em worktree própria, executando as Ta
 
 Executa a Spec aprovada. A Spec é a fonte de verdade.
 
+Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/PROCESSO.md` (seção Estado real antes de agir). Se a PR estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue, pare e reporte, sem agir.
+
 ## Entrada
 
 - Número da issue, com Spec aprovada e comentada.

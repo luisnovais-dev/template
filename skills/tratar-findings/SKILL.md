@@ -7,6 +7,8 @@ description: Corrige todos os findings de um code review numa PR, bloqueantes e 
 
 Corrige os findings do review. Todo finding aplicável é tratado, bloqueante ou não.
 
+Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/PROCESSO.md` (seção Estado real antes de agir). Se a PR estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue, pare e reporte, sem agir.
+
 ## Entrada
 
 - Número da PR, com os findings publicados.
