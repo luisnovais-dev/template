@@ -71,6 +71,21 @@ if [ -n "$GH_USUARIO" ]; then
 fi
 DONOS="${HIGIENE_DONOS:-} $GH_USUARIO $GH_ORGS"
 
+# Aviso de disco: uma linha por partição (dedupe por ponto de montagem) acima do limite.
+# HIGIENE_LIMITE_DISCO é o limite em porcentagem, padrão 90 (acima dele, avisa).
+avisar_disco() {
+  local limite="${HIGIENE_LIMITE_DISCO:-90}" ponto
+  for ponto in "$HOME" "${RAIZES[@]}"; do
+    df -P "$ponto" 2>/dev/null | awk 'NR == 2 {print $6 "\t" $5 "\t" $4}'
+  done | awk -v lim="$limite" -F'\t' '
+    !seen[$1]++ {
+      uso = $2; sub("%", "", uso)
+      if (uso + 0 > lim) {
+        printf "  AVISO_DISCO: %s a %s%% de uso, %.1f GB livres. Limite: %s%%. Libere espaço antes de novas execuções.\n", $1, uso, $3 / 1048576, lim
+      }
+    }'
+}
+
 # O commit existe no GitHub (por exemplo, ponta de uma PR cuja branch remota foi apagada)?
 # Responde SIM, NAO ou INDETERMINADO.
 commit_no_github() {
@@ -105,6 +120,8 @@ estado_pr() {
   n=$(gh pr list --repo "$slug" --state open --head "$branch" --json number --jq 'length' 2>/dev/null)
   if [ "${n:-x}" = "0" ]; then echo "NENHUMA"; elif [ -n "$n" ]; then echo "ABERTA"; else echo "INDETERMINADO"; fi
 }
+
+avisar_disco
 
 for repo in "${UNICOS[@]}"; do
   echo "== REPOSITÓRIO: $repo"
@@ -215,13 +232,16 @@ for repo in "${UNICOS[@]}"; do
   if [ -d "$repo/.agent" ]; then
     echo "  PROGRESSO: $repo/.agent (registro de trabalho; não remover por esta skill)"
   fi
-  lixo=$(find "$repo" -maxdepth 3 \( -name '_tmp*' -o -name '*.log' -o -name 'tmp-verif-*' \) \
-    -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.claude/worktrees/*' 2>/dev/null | head -20)
-  if [ -n "$lixo" ]; then
-    printf '%s\n' "$lixo" | while IFS= read -r item; do
-      echo "  LIXO: ${item#"$repo"/}"
-    done
-  fi
+  # Só é LIXO o que não está versionado: arquivo rastreado nunca entra, mesmo com nome de temporário.
+  find "$repo" -maxdepth 3 \( -name '_tmp*' -o -name '*.log' -o -name 'tmp-verif-*' \) \
+    -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.claude/worktrees/*' 2>/dev/null \
+    | head -50 | while IFS= read -r item; do
+      rel="${item#"$repo"/}"
+      if git -C "$repo" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then
+        continue
+      fi
+      echo "  LIXO: $rel"
+    done | head -20
 done
 
 # Resíduos fora dos repositórios (scratch e snapshots), só listados.
@@ -246,5 +266,6 @@ for cache in "$HOME/.cache" "$HOME/.npm" "$HOME/.local/share/pnpm"; do
   fi
 done
 
+avisar_disco
 echo "== FIM. Nada foi alterado. Remoções exigem lista aprovada pelo mantenedor."
 exit 0

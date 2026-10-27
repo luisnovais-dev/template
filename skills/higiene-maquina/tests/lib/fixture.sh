@@ -94,7 +94,13 @@ u=$(cat "${FX_DADOS:?}/df_uso" 2>/dev/null || echo 10)
 printf 'Filesystem 1024-blocks Used Available Capacity Mounted on\n'
 printf 'stub 100 %s %s %s%% %s\n' "$u" "$((100 - u))" "$u" "${2:-/}"
 STUB
-  chmod +x "$FX_DIR/bin/gh" "$FX_DIR/bin/df"
+  # Stub de docker: sem daemon nos testes. Os casos de Docker preparam as respostas em $FX_DADOS.
+  cat > "$FX_DIR/bin/docker" <<'STUB'
+#!/usr/bin/env bash
+echo "stub docker: daemon indisponível" >&2
+exit 1
+STUB
+  chmod +x "$FX_DIR/bin/gh" "$FX_DIR/bin/df" "$FX_DIR/bin/docker"
   export PATH="$FX_DIR/bin:$PATH"
 }
 
