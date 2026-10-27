@@ -103,7 +103,8 @@ commit_no_github() {
 
 # Converte a URL de origin em owner/repo do GitHub (vazio se não for GitHub).
 slug_github() {
-  git -C "$1" remote get-url origin 2>/dev/null \
+  # config (URL crua), não get-url: get-url aplica insteadOf e pode esconder o GitHub.
+  git -C "$1" config --get remote.origin.url 2>/dev/null \
     | sed -E 's#^(git@github.com:|https?://(www\.)?github\.com/)##; s#\.git$##' \
     | grep -E '^[^/:@ ]+/[^/:@ ]+$' || true
 }
@@ -122,6 +123,31 @@ estado_pr() {
 }
 
 avisar_disco
+
+# Integração por squash (R9): SIM só se valerem todas as condições abaixo.
+#   1. não há PR aberta para a branch;
+#   2. há PR mesclada para a branch, e o headRefOid dela é igual à ponta local ou está à frente
+#      dela (o compare headRefOid...ponta responde identical ou behind);
+#   3. o commit da ponta existe no GitHub.
+# Qualquer resposta indeterminada do GitHub resulta em NAO.
+integrada_por_squash() {
+  local slug="$1" branch="$2" tip="$3" n oid status
+  if [ -z "$slug" ] || ! command -v gh >/dev/null 2>&1; then echo NAO; return; fi
+
+  n=$(gh pr list --repo "$slug" --state open --head "$branch" --json number --jq 'length' 2>/dev/null)
+  [ "${n:-1}" = "0" ] || { echo NAO; return; }
+
+  oid=$(gh pr list --repo "$slug" --state merged --head "$branch" --json headRefOid --jq '.[0].headRefOid // empty' 2>/dev/null)
+  [ -n "$oid" ] || { echo NAO; return; }
+
+  status=$(gh api "repos/$slug/compare/$oid...$tip" --jq .status 2>/dev/null)
+  case "$status" in
+    identical|behind) ;;
+    *) echo NAO; return ;;
+  esac
+
+  [ "$(commit_no_github "$slug" "$tip")" = "SIM" ] && echo SIM || echo NAO
+}
 
 for repo in "${UNICOS[@]}"; do
   echo "== REPOSITÓRIO: $repo"
@@ -175,7 +201,7 @@ for repo in "${UNICOS[@]}"; do
       integrada=0
       if git -C "$repo" merge-base --is-ancestor "$branch" "$base_ref" 2>/dev/null; then
         integrada=1
-      elif [ "$(estado_pr "$slug" "$branch")" = "MESCLADA" ]; then
+      elif [ "$(integrada_por_squash "$slug" "$branch" "$(git -C "$caminho" rev-parse HEAD 2>/dev/null)")" = "SIM" ]; then
         integrada=1
       fi
       if [ "$integrada" -eq 1 ] && [ "$sujo" -eq 0 ]; then
@@ -200,7 +226,7 @@ for repo in "${UNICOS[@]}"; do
 
     if [ "$integrada" -eq 0 ]; then
       estado=$(estado_pr "$slug" "$branch")
-      if [ "$estado" = "MESCLADA" ]; then
+      if [ "$estado" = "MESCLADA" ] && [ "$(integrada_por_squash "$slug" "$branch" "$sha")" = "SIM" ]; then
         integrada=1
       fi
     fi
