@@ -384,6 +384,12 @@ processo_dentro() {
   return 2
 }
 
+# Arquivos de .agent/ numa worktree. São registro de trabalho e não versionados (o git ignora a
+# pasta), então contam como pendência, mesmo que o status esteja limpo.
+agent_pendente() {
+  find "$1/.agent" -type f 2>/dev/null | wc -l | tr -d ' '
+}
+
 remover_worktree() {
   local repo="$1" alvo="$2" sujo branch ponta slug integrada rc
   if ! git -C "$repo" rev-parse --git-dir >/dev/null 2>&1; then
@@ -398,6 +404,9 @@ remover_worktree() {
   sujo=$(git -C "$alvo" status --porcelain --untracked-files=all 2>/dev/null | wc -l | tr -d ' ')
   if [ "$sujo" != "0" ]; then
     recusar worktree "$alvo" "alterações pendentes ($sujo)"; return 1
+  fi
+  if [ "$(agent_pendente "$alvo")" != "0" ]; then
+    recusar worktree "$alvo" "registro .agent com $(agent_pendente "$alvo") arquivo(s) não versionado(s)"; return 1
   fi
   ponta=$(git -C "$alvo" rev-parse HEAD 2>/dev/null)
   branch=$(git -C "$alvo" symbolic-ref --short -q HEAD 2>/dev/null)
@@ -618,7 +627,7 @@ for repo in "${UNICOS[@]}"; do
         echo "  ORFAO: worktree $caminho (branch $branch) sem diretório. Use 'git worktree prune' somente após confirmação."
         continue
       fi
-      sujo=$(git -C "$caminho" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+      sujo=$(( $(git -C "$caminho" status --porcelain 2>/dev/null | wc -l | tr -d ' ') + $(agent_pendente "$caminho") ))
       tamanho=$(du -sh "$caminho" 2>/dev/null | cut -f1)
       if [ "$branch" = "DETACHED" ]; then
         ref=$(git -C "$caminho" rev-parse HEAD 2>/dev/null)
