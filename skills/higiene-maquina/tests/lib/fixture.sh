@@ -98,11 +98,30 @@ u=$(cat "${FX_DADOS:?}/df_uso" 2>/dev/null || echo 10)
 printf 'Filesystem 1024-blocks Used Available Capacity Mounted on\n'
 printf 'stub 100 %s %s %s%% %s\n' "$u" "$((100 - u))" "$u" "${2:-/}"
 STUB
-  # Stub de docker: sem daemon nos testes. Os casos de Docker preparam as respostas em $FX_DADOS.
+  # Stub de docker, a partir de $FX_DADOS. Sem docker_ps, o daemon é tratado como indisponível.
+  # Formatos: docker_ps (nome|estado|projeto), docker_volumes, docker_redes (um nome por linha),
+  # docker_mounts_<nome> (volumes montados por um container).
   cat > "$FX_DIR/bin/docker" <<'STUB'
 #!/usr/bin/env bash
-echo "stub docker: daemon indisponível" >&2
-exit 1
+d="${FX_DADOS:?}"
+if [ ! -f "$d/docker_ps" ]; then
+  echo "stub docker: daemon indisponível" >&2
+  exit 1
+fi
+case "$*" in
+  "ps -a --format "*) cat "$d/docker_ps" ;;
+  "volume ls --format "*) cat "$d/docker_volumes" 2>/dev/null ;;
+  "network ls --format "*) cat "$d/docker_redes" 2>/dev/null ;;
+  "inspect --format "*)
+    nome="${*: -1}"
+    cat "$d/docker_mounts_$nome" 2>/dev/null ;;
+  "system df")
+    echo "TYPE TOTAL ACTIVE SIZE RECLAIMABLE"
+    echo "Images 0 0 0B 0B" ;;
+  *)
+    echo "stub docker: comando não previsto: $*" >&2
+    exit 1 ;;
+esac
 STUB
   chmod +x "$FX_DIR/bin/gh" "$FX_DIR/bin/df" "$FX_DIR/bin/docker"
   export PATH="$FX_DIR/bin:$PATH"

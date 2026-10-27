@@ -219,6 +219,67 @@ detalhar_pendentes() {
   fi
 }
 
+# Chave de execução de teste, <pid>-<8 hex>, lida do fim do nome (vazia se não houver).
+chave_execucao() {
+  printf '%s\n' "$1" | sed -nE 's/.*-([0-9]+-[0-9a-f]{8})$/\1/p'
+}
+
+# Recursos Docker de execuções de teste (R10). Containers, volumes e redes são agrupados pela
+# chave de execução, lida do nome ou do projeto do compose. Volume montado por um container do
+# grupo entra no grupo mesmo sem chave. Grupo com PID morto é DOCKER_ORFAO (candidato à
+# remoção pela lista aprovada); com PID vivo, DOCKER_ATIVO (só informativo).
+avaliar_docker() {
+  if ! docker ps -a --format '{{.Names}}' >/dev/null 2>&1; then
+    echo "  DOCKER: indisponível (sem daemon ou sem permissão). Nada a classificar."
+    return
+  fi
+  local nome estado proj v r m k pid classe situacao
+  declare -A grupo_c grupo_v grupo_r grupo_vm todas
+  while IFS='|' read -r nome estado proj; do
+    [ -n "$nome" ] || continue
+    k=$(chave_execucao "$nome")
+    [ -n "$k" ] || k=$(chave_execucao "$proj")
+    [ -n "$k" ] || continue
+    grupo_c[$k]+="$nome ($estado)"$'\n'
+    while IFS= read -r m; do
+      [ -n "$m" ] && grupo_vm[$k]+="$m"$'\n'
+    done < <(docker inspect --format '{{range .Mounts}}{{if .Name}}{{.Name}}{{"\n"}}{{end}}{{end}}' "$nome" 2>/dev/null)
+  done < <(docker ps -a --format '{{.Names}}|{{.State}}|{{.Label "com.docker.compose.project"}}' 2>/dev/null)
+
+  while IFS= read -r v; do
+    [ -n "$v" ] || continue
+    k=$(chave_execucao "$v")
+    [ -n "$k" ] && grupo_v[$k]+="$v"$'\n'
+  done < <(docker volume ls --format '{{.Name}}' 2>/dev/null)
+
+  for k in "${!grupo_vm[@]}"; do
+    while IFS= read -r m; do
+      [ -n "$m" ] || continue
+      printf '%s' "${grupo_v[$k]:-}" | grep -qxF "$m" || grupo_v[$k]+="$m"$'\n'
+    done <<< "${grupo_vm[$k]}"
+  done
+
+  while IFS= read -r r; do
+    [ -n "$r" ] || continue
+    k=$(chave_execucao "$r")
+    [ -n "$k" ] && grupo_r[$k]+="$r"$'\n'
+  done < <(docker network ls --format '{{.Name}}' 2>/dev/null)
+
+  for k in "${!grupo_c[@]}" "${!grupo_v[@]}" "${!grupo_r[@]}"; do todas[$k]=1; done
+  for k in $(printf '%s\n' "${!todas[@]}" | sort); do
+    pid=${k%%-*}
+    if ps -p "$pid" >/dev/null 2>&1; then
+      classe=DOCKER_ATIVO; situacao="PID $pid está vivo"
+    else
+      classe=DOCKER_ORFAO; situacao="PID $pid não está vivo"
+    fi
+    echo "  $classe: execução $k ($situacao)"
+    printf '%s' "${grupo_c[$k]:-}" | sed '/^$/d; s/^/    container: /'
+    printf '%s' "${grupo_v[$k]:-}" | sed '/^$/d; s/^/    volume: /'
+    printf '%s' "${grupo_r[$k]:-}" | sed '/^$/d; s/^/    rede: /'
+  done
+}
+
 # Uma linha por worktree do repositório: caminho e branch (ou DETACHED).
 listar_worktrees() {
   git -C "$1" worktree list --porcelain | awk '
@@ -422,6 +483,9 @@ for raiz in "${RAIZES[@]}"; do
         echo "  LIXO: $item ($(du -sh "$item" 2>/dev/null | cut -f1))"
       done
 done
+
+echo "== DOCKER"
+avaliar_docker
 
 echo "== ESPAÇO"
 echo "  ESPACO_LIBERAVEL: $(espaco_liberavel ${REMOVIVEIS[@]+"${REMOVIVEIS[@]}"}) (SEGURO_REMOVER e LIXO; cada arquivo contado uma vez, só se todos os seus links estão no conjunto)"
