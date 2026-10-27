@@ -32,6 +32,8 @@ fi
 
 # Caminhos que a remoção apagaria (SEGURO_REMOVER e LIXO), para somar ESPACO_LIBERAVEL.
 REMOVIVEIS=()
+# Lista para aprovação: uma linha por item removível, TSV com CLASSE, TIPO, REPO e ALVO.
+LISTA_APROVACAO=()
 
 # Repositórios: diretórios com .git, em qualquer nível até 4.
 REPOS=()
@@ -46,7 +48,7 @@ for raiz in "${RAIZES[@]}"; do
     -not -path '*/.claude/worktrees/*' 2>/dev/null)
 done
 
-if [ "${#REPOS[@]}" -eq 0 ]; then
+if [ "${#REPOS[@]}" -eq 0 ] && [ "${1:-}" != "--remover" ]; then
   echo "Nenhum repositório encontrado em: ${RAIZES[*]}"
   exit 0
 fi
@@ -125,7 +127,7 @@ estado_pr() {
   if [ "${n:-x}" = "0" ]; then echo "NENHUMA"; elif [ -n "$n" ]; then echo "ABERTA"; else echo "INDETERMINADO"; fi
 }
 
-avisar_disco
+[ "${1:-}" = "--remover" ] || avisar_disco
 
 # Integração por squash (R9): SIM só se valerem todas as condições abaixo.
 #   1. não há PR aberta para a branch;
@@ -272,6 +274,7 @@ avaliar_docker() {
       classe=DOCKER_ATIVO; situacao="PID $pid está vivo"
     else
       classe=DOCKER_ORFAO; situacao="PID $pid não está vivo"
+      LISTA_APROVACAO+=("$(printf 'DOCKER_ORFAO\tdocker\t-\t%s' "$k")")
     fi
     echo "  $classe: execução $k ($situacao)"
     printf '%s' "${grupo_c[$k]:-}" | sed '/^$/d; s/^/    container: /'
@@ -350,6 +353,237 @@ aviso_store() {
   fi
 }
 
+# ---- Modo --remover (R13) ------------------------------------------------------------------
+# Aplica só a lista aprovada (TSV: CLASSE, TIPO, REPO, ALVO). Cada item é revalidado no momento
+# da remoção, e o que não for seguro é recusado. Nunca usa --force, nunca apaga branch remota,
+# nunca age sobre item que não esteja na lista.
+
+recusar() {
+  echo "RECUSADO: $1 $2: $3"
+}
+
+# 0 se algum processo tem o diretório atual dentro de $1, 1 se nenhum tem, 2 se não foi possível
+# verificar (sem /proc e sem lsof). Só 1 libera a remoção.
+processo_dentro() {
+  local alvo="$1" p c
+  if [ -d /proc/self ]; then
+    for p in /proc/[0-9]*; do
+      c=$(readlink "$p/cwd" 2>/dev/null) || continue
+      case "$c" in
+        "$alvo"|"$alvo"/*) return 0 ;;
+      esac
+    done
+    return 1
+  fi
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -a -d cwd -Fn 2>/dev/null | awk -v a="$alvo" '
+      substr($0, 1, 1) == "n" { p = substr($0, 2); if (p == a || index(p, a "/") == 1) found = 1 }
+      END { exit !found }'
+    return $?
+  fi
+  return 2
+}
+
+remover_worktree() {
+  local repo="$1" alvo="$2" sujo branch ponta slug integrada rc
+  if ! git -C "$repo" rev-parse --git-dir >/dev/null 2>&1; then
+    recusar worktree "$alvo" "repositório $repo inexistente"; return 1
+  fi
+  if [ "$alvo" = "$repo" ] || ! git -C "$repo" worktree list --porcelain | grep -qxF "worktree $alvo"; then
+    recusar worktree "$alvo" "não é worktree registrada de $repo"; return 1
+  fi
+  if [ ! -d "$alvo" ]; then
+    recusar worktree "$alvo" "diretório não existe"; return 1
+  fi
+  sujo=$(git -C "$alvo" status --porcelain --untracked-files=all 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$sujo" != "0" ]; then
+    recusar worktree "$alvo" "alterações pendentes ($sujo)"; return 1
+  fi
+  ponta=$(git -C "$alvo" rev-parse HEAD 2>/dev/null)
+  branch=$(git -C "$alvo" symbolic-ref --short -q HEAD 2>/dev/null)
+  slug=$(slug_github "$repo")
+  if git -C "$repo" merge-base --is-ancestor "$ponta" origin/main 2>/dev/null; then
+    integrada=1
+  elif [ -n "$branch" ] && [ "$(integrada_por_squash "$slug" "$branch" "$ponta")" = "SIM" ]; then
+    integrada=1
+  else
+    integrada=0
+  fi
+  if [ "$integrada" -ne 1 ]; then
+    recusar worktree "$alvo" "trabalho não integrado"; return 1
+  fi
+  processo_dentro "$alvo"
+  rc=$?
+  if [ "$rc" -ne 1 ]; then
+    recusar worktree "$alvo" "processo com diretório dentro, ou não verificado (código $rc)"; return 1
+  fi
+  if ! git -C "$repo" worktree remove "$alvo" >/dev/null 2>&1; then
+    recusar worktree "$alvo" "git worktree remove falhou"; return 1
+  fi
+  rmdir "$(dirname "$alvo")" 2>/dev/null
+  echo "REMOVIDO: worktree $alvo"
+}
+
+remover_branch() {
+  local repo="$1" branch="$2" tip modo
+  if ! git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+    recusar branch "$branch" "branch inexistente"; return 1
+  fi
+  if git -C "$repo" worktree list --porcelain | grep -qxF "branch refs/heads/$branch"; then
+    recusar branch "$branch" "em uso em worktree"; return 1
+  fi
+  if [ "$(git -C "$repo" symbolic-ref --short -q HEAD 2>/dev/null)" = "$branch" ]; then
+    recusar branch "$branch" "está no checkout principal"; return 1
+  fi
+  tip=$(git -C "$repo" rev-parse "refs/heads/$branch")
+  if git -C "$repo" merge-base --is-ancestor "$tip" origin/main 2>/dev/null; then
+    modo=-d
+  elif [ "$(integrada_por_squash "$(slug_github "$repo")" "$branch" "$tip")" = "SIM" ]; then
+    modo=-D
+  else
+    recusar branch "$branch" "não integrada (sem PR mesclada por squash conferida)"; return 1
+  fi
+  if ! git -C "$repo" branch "$modo" "$branch" >/dev/null 2>&1; then
+    recusar branch "$branch" "git branch $modo falhou"; return 1
+  fi
+  echo "REMOVIDO: branch $branch ($modo)"
+}
+
+remover_lixo() {
+  local repo="$1" alvo="$2" rel base
+  case "$alvo" in
+    "$repo"/*) ;;
+    *) recusar lixo "$alvo" "fora do repositório"; return 1 ;;
+  esac
+  rel="${alvo#"$repo"/}"
+  base="${rel##*/}"
+  case "$base" in
+    _tmp*|*.log|tmp-verif-*) ;;
+    *) recusar lixo "$rel" "nome não é de LIXO"; return 1 ;;
+  esac
+  if [ ! -e "$alvo" ]; then
+    recusar lixo "$rel" "não existe"; return 1
+  fi
+  if git -C "$repo" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then
+    recusar lixo "$rel" "versionado"; return 1
+  fi
+  if [ -d "$alvo" ]; then
+    if [ -e "$alvo/.git" ]; then
+      recusar lixo "$rel" "contém repositório"; return 1
+    fi
+    rm -r -- "$alvo"
+  else
+    rm -f -- "$alvo"
+  fi
+  echo "REMOVIDO: lixo $rel"
+}
+
+remover_docker() {
+  local k="$1" pid nome estado proj v r m
+  local -a conts=() vols=() nets=()
+  if ! printf '%s\n' "$k" | grep -qE '^[0-9]+-[0-9a-f]{8}$'; then
+    recusar docker "$k" "chave de execução inválida"; return 1
+  fi
+  pid=${k%%-*}
+  if ps -p "$pid" >/dev/null 2>&1; then
+    recusar docker "$k" "PID $pid está vivo (execução ativa)"; return 1
+  fi
+  while IFS='|' read -r nome estado proj; do
+    [ -n "$nome" ] || continue
+    if [ "$(chave_execucao "$nome")" = "$k" ] || [ "$(chave_execucao "$proj")" = "$k" ]; then
+      conts+=("$nome")
+    fi
+  done < <(docker ps -a --format '{{.Names}}|{{.State}}|{{.Label "com.docker.compose.project"}}' 2>/dev/null)
+  while IFS= read -r v; do
+    [ -n "$v" ] && [ "$(chave_execucao "$v")" = "$k" ] && vols+=("$v")
+  done < <(docker volume ls --format '{{.Name}}' 2>/dev/null)
+  while IFS= read -r r; do
+    [ -n "$r" ] && [ "$(chave_execucao "$r")" = "$k" ] && nets+=("$r")
+  done < <(docker network ls --format '{{.Name}}' 2>/dev/null)
+  for nome in ${conts[@]+"${conts[@]}"}; do
+    while IFS= read -r m; do
+      [ -n "$m" ] || continue
+      case " ${vols[*]+${vols[*]}} " in
+        *" $m "*) ;;
+        *) vols+=("$m") ;;
+      esac
+    done < <(docker inspect --format '{{range .Mounts}}{{if .Name}}{{.Name}}{{"\n"}}{{end}}{{end}}' "$nome" 2>/dev/null)
+  done
+  if [ "${#conts[@]}" -eq 0 ] && [ "${#vols[@]}" -eq 0 ] && [ "${#nets[@]}" -eq 0 ]; then
+    echo "NADA: docker $k já não tem recursos"; return 4
+  fi
+  for nome in ${conts[@]+"${conts[@]}"}; do
+    docker stop "$nome" >/dev/null 2>&1
+    if ! docker rm "$nome" >/dev/null 2>&1; then
+      recusar docker "$k" "docker rm $nome falhou"; return 1
+    fi
+  done
+  for v in ${vols[@]+"${vols[@]}"}; do
+    if ! docker volume rm "$v" >/dev/null 2>&1; then
+      recusar docker "$k" "docker volume rm $v falhou"; return 1
+    fi
+  done
+  for r in ${nets[@]+"${nets[@]}"}; do
+    if ! docker network rm "$r" >/dev/null 2>&1; then
+      recusar docker "$k" "docker network rm $r falhou"; return 1
+    fi
+  done
+  echo "REMOVIDO: docker execução $k (containers: ${#conts[@]}, volumes: ${#vols[@]}, redes: ${#nets[@]})"
+}
+
+# Aplica a lista aprovada linha a linha. Código 0 se tudo que foi pedido foi removido, 3 se algo foi recusado.
+remover_lista() {
+  local arq="$1" linha classe tipo repo alvo extra esperado recusados=0 removidos=0
+  if [ "$arq" = "-" ]; then
+    arq=/dev/stdin
+  fi
+  while IFS= read -r linha || [ -n "$linha" ]; do
+    [ -n "$linha" ] || continue
+    IFS=$'\t' read -r classe tipo repo alvo extra <<< "$linha"
+    if [ -z "$alvo" ] || [ -n "$extra" ]; then
+      echo "RECUSADO: linha malformada, precisa de 4 campos: ${linha:0:60}"
+      recusados=$((recusados + 1)); continue
+    fi
+    case "$tipo" in
+      worktree|branch) esperado=SEGURO_REMOVER ;;
+      lixo) esperado=LIXO ;;
+      docker) esperado=DOCKER_ORFAO ;;
+      *)
+        recusar "$tipo" "$alvo" "tipo desconhecido"
+        recusados=$((recusados + 1)); continue ;;
+    esac
+    if [ "$classe" != "$esperado" ]; then
+      recusar "$tipo" "$alvo" "classe $classe não corresponde ao tipo (esperado $esperado)"
+      recusados=$((recusados + 1)); continue
+    fi
+    case "$tipo" in
+      worktree) remover_worktree "$repo" "$alvo" ;;
+      branch) remover_branch "$repo" "$alvo" ;;
+      lixo) remover_lixo "$repo" "$alvo" ;;
+      docker) remover_docker "$alvo" ;;
+    esac
+    case "$?" in
+      0) removidos=$((removidos + 1)) ;;
+      4) ;;
+      *) recusados=$((recusados + 1)) ;;
+    esac
+  done < "$arq"
+  echo "== RESUMO: $removidos removido(s), $recusados recusado(s). Nada fora da lista foi tocado."
+  if [ "$recusados" -gt 0 ]; then
+    return 3
+  fi
+  return 0
+}
+
+if [ "${1:-}" = "--remover" ]; then
+  if [ -z "${2:-}" ]; then
+    echo "Uso: inventario.sh --remover <lista.tsv | ->" >&2
+    exit 64
+  fi
+  remover_lista "$2"
+  exit $?
+fi
+
 for repo in "${UNICOS[@]}"; do
   echo "== REPOSITÓRIO: $repo"
 
@@ -390,6 +624,7 @@ for repo in "${UNICOS[@]}"; do
         ref=$(git -C "$caminho" rev-parse HEAD 2>/dev/null)
         if [ "$sujo" -eq 0 ] && git -C "$repo" merge-base --is-ancestor "$ref" "$base_ref" 2>/dev/null; then
           REMOVIVEIS+=("$caminho")
+          LISTA_APROVACAO+=("$(printf 'SEGURO_REMOVER\tworktree\t%s\t%s' "$repo" "$caminho")")
           echo "  SEGURO_REMOVER: worktree $caminho (HEAD solto já integrado, limpa, libera $(espaco_liberavel "$caminho"))"
           aviso_store "$caminho"
         else
@@ -405,6 +640,7 @@ for repo in "${UNICOS[@]}"; do
       fi
       if [ "$integrada" -eq 1 ] && [ "$sujo" -eq 0 ]; then
         REMOVIVEIS+=("$caminho")
+        LISTA_APROVACAO+=("$(printf 'SEGURO_REMOVER\tworktree\t%s\t%s' "$repo" "$caminho")")
         echo "  SEGURO_REMOVER: worktree $caminho (branch $branch integrada, limpa, libera $(espaco_liberavel "$caminho"))"
         aviso_store "$caminho"
       else
@@ -414,7 +650,7 @@ for repo in "${UNICOS[@]}"; do
   done < <(listar_worktrees "$repo")
 
   # Branches locais.
-  git -C "$repo" for-each-ref --format='%(refname:short)' refs/heads | while IFS= read -r branch; do
+  while IFS= read -r branch; do
     [ "$branch" = "main" ] && continue
     sha=$(git -C "$repo" rev-parse "$branch")
     if git -C "$repo" merge-base --is-ancestor "$branch" "$base_ref" 2>/dev/null; then
@@ -446,7 +682,8 @@ for repo in "${UNICOS[@]}"; do
     fi
 
     if [ "$integrada" -eq 1 ]; then
-      echo "  SEGURO_REMOVER: branch $branch integrada (ancestral de origin/main ou PR mesclada), sem worktree"
+      LISTA_APROVACAO+=("$(printf 'SEGURO_REMOVER\tbranch\t%s\t%s' "$repo" "$branch")")
+      echo "  SEGURO_REMOVER: branch $branch integrada (ancestral de origin/main, ou PR mesclada por squash com ponta conferida), sem worktree"
     elif [ "$no_remoto" -eq 1 ]; then
       echo "  REQUER_DECISAO: branch $branch com ponta publicada e sem PR mesclada (PR: ${estado:-?})"
     elif [ "$(commit_no_github "$slug" "$sha")" = "SIM" ]; then
@@ -454,7 +691,7 @@ for repo in "${UNICOS[@]}"; do
     else
       echo "  RESGATAR: branch $branch com commits ($sha) fora do remoto vivo e sem PR mesclada (PR: ${estado:-INDETERMINADO}). Não remover."
     fi
-  done
+  done < <(git -C "$repo" for-each-ref --format='%(refname:short)' refs/heads)
 
   # Resíduos de agente dentro do repositório. .agent/ é trabalho, não lixo.
   if [ -d "$repo/.agent" ]; then
@@ -467,6 +704,7 @@ for repo in "${UNICOS[@]}"; do
       continue
     fi
     REMOVIVEIS+=("$item")
+    LISTA_APROVACAO+=("$(printf 'LIXO\tlixo\t%s\t%s' "$repo" "$item")")
     echo "  LIXO: $rel"
   done < <(find "$repo" -maxdepth 3 \( -name '_tmp*' -o -name '*.log' -o -name 'tmp-verif-*' \) \
     -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.claude/worktrees/*' 2>/dev/null \
@@ -502,5 +740,10 @@ for cache in "$HOME/.cache" "$HOME/.npm" "$HOME/.local/share/pnpm"; do
 done
 
 avisar_disco
+echo "== LISTA PARA APROVAÇÃO"
+echo "# Apague as linhas que não aprova e passe o arquivo a: inventario.sh --remover <arquivo>"
+if [ "${#LISTA_APROVACAO[@]}" -gt 0 ]; then
+  printf '%s\n' "${LISTA_APROVACAO[@]}"
+fi
 echo "== FIM. Nada foi alterado. Remoções exigem lista aprovada pelo mantenedor."
 exit 0

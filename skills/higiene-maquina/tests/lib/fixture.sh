@@ -41,6 +41,11 @@ fixture_iniciar() {
   # Dono e usuário do gh reconhecidos nos testes.
   echo "teste" > "$FX_DADOS/gh_login"
   : > "$FX_DADOS/gh_orgs"
+  # Sem PR, sem commit e sem comparação: o estado padrão é explícito, não "arquivo ausente".
+  : > "$FX_DADOS/gh_pr_merged"
+  : > "$FX_DADOS/gh_pr_open"
+  : > "$FX_DADOS/gh_commits"
+  : > "$FX_DADOS/gh_compare"
 
   # Stub de gh: responde a partir de arquivos em $FX_DADOS. Formatos:
   #   gh_pr_merged  linhas "<branch> <headRefOid>" (PR mesclada)
@@ -115,6 +120,9 @@ case "$*" in
   "inspect --format "*)
     nome="${*: -1}"
     cat "$d/docker_mounts_$nome" 2>/dev/null ;;
+  "stop "*|"rm "*|"volume rm "*|"network rm "*)
+    # Comandos de remoção: registrados em docker_log, sem efeito real.
+    echo "$*" >> "$d/docker_log" ;;
   "system df")
     echo "TYPE TOTAL ACTIVE SIZE RECLAIMABLE"
     echo "Images 0 0 0B 0B" ;;
