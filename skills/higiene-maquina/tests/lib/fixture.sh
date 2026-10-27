@@ -81,6 +81,10 @@ case "$args" in
   "api repos/"*"/compare/"*)
     par="${args##*/compare/}"; par="${par%% *}"
     awk -v p="$par" '$1 == p {print $2; found=1; exit} END {if (!found) exit 1}' "$d/gh_compare" 2>/dev/null ;;
+  "issue view "*)
+    # Texto (corpo e comentários) de uma issue, em $FX_DADOS/gh_issue_<n>.txt.
+    n=$(printf '%s' "$args" | awk '{print $3}')
+    cat "$d/gh_issue_$n.txt" 2>/dev/null || exit 1 ;;
   *)
     echo "stub gh: comando não previsto: $args" >&2
     exit 1 ;;

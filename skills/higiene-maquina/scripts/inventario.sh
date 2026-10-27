@@ -149,6 +149,73 @@ integrada_por_squash() {
   [ "$(commit_no_github "$slug" "$tip")" = "SIM" ] && echo SIM || echo NAO
 }
 
+# Classifica um pendente de Spec ou documento (RASCUNHO) pela comparação com a main e com a issue.
+# main: AUSENTE, IGUAL ou DIFERENTE (compara o blob do arquivo com o de origin/main).
+# issue: IGUAL (conteúdo normalizado contido no corpo ou num comentário), DIFERENTE (a primeira
+# linha aparece, mas o conteúdo não), AUSENTE, INDETERMINADO, ou SEM_ISSUE quando a branch não tem número.
+# Só o resultado é impresso, nunca o conteúdo.
+classificar_rascunho() {
+  local repo="$1" slug="$2" caminho="$3" branch="$4" rel="$5" main blob_main blob_wt n issue texto
+  if git -C "$repo" cat-file -e "origin/main:$rel" 2>/dev/null; then
+    blob_main=$(git -C "$repo" rev-parse "origin/main:$rel" 2>/dev/null)
+    blob_wt=$(git -C "$caminho" hash-object -- "$rel" 2>/dev/null)
+    if [ "$blob_main" = "$blob_wt" ]; then main=IGUAL; else main=DIFERENTE; fi
+  else
+    main=AUSENTE
+  fi
+
+  n=$(printf '%s\n' "$branch" | sed -nE -e 's#^[^/]+/([0-9]+)-.*#\1#p' -e 's#^issue-([0-9]+)(-.*)?$#\1#p' | head -1)
+  if [ -z "$n" ]; then
+    echo "main=$main issue=SEM_ISSUE"
+    return
+  fi
+  if [ -z "$slug" ] || ! texto=$(gh issue view "$n" --repo "$slug" --json body,comments \
+      --jq '([.body] + [.comments[]?.body]) | map(select(. != null)) | join("\n\n")' 2>/dev/null); then
+    echo "main=$main issue=#$n INDETERMINADO"
+    return
+  fi
+  issue=$(ARQ="$caminho/$rel" ISSUE_TXT="$texto" python3 -c '
+import os
+def norm(t):
+    return "\n".join(l.rstrip() for l in t.replace("\r", "").split("\n") if l.strip())
+with open(os.environ["ARQ"], encoding="utf-8", errors="replace") as f:
+    c = norm(f.read())
+i = norm(os.environ["ISSUE_TXT"])
+if c and c in i:
+    print("IGUAL")
+elif c and c.split("\n")[0] in i:
+    print("DIFERENTE")
+else:
+    print("AUSENTE")
+' 2>/dev/null || echo INDETERMINADO)
+  echo "main=$main issue=#$n $issue"
+}
+
+# Lista os pendentes de uma worktree: até 20 caminhos, com o total. Pendente de Spec ou
+# documento não versionado vira RASCUNHO. Só caminhos e estados são impressos.
+detalhar_pendentes() {
+  local repo="$1" slug="$2" caminho="$3" branch="$4" linha rel total
+  total=$(git -C "$caminho" status --porcelain --untracked-files=all 2>/dev/null | wc -l | tr -d ' ')
+  git -C "$caminho" status --porcelain --untracked-files=all 2>/dev/null | head -20 \
+    | while IFS= read -r linha; do
+      rel="${linha:3}"
+      case "$linha" in
+        '?? '*)
+          case "$rel" in
+            *.md|docs/*|openspec/*|specs/*)
+              echo "    RASCUNHO: $rel $(classificar_rascunho "$repo" "$slug" "$caminho" "$branch" "$rel")" ;;
+            *)
+              echo "    pendente: $rel (??)" ;;
+          esac ;;
+        *)
+          echo "    pendente: $rel (${linha:0:2})" ;;
+      esac
+    done
+  if [ "$total" -gt 20 ]; then
+    echo "    ... e mais $((total - 20)) pendente(s), não listados."
+  fi
+}
+
 for repo in "${UNICOS[@]}"; do
   echo "== REPOSITÓRIO: $repo"
 
@@ -208,6 +275,7 @@ for repo in "${UNICOS[@]}"; do
         echo "  SEGURO_REMOVER: worktree $caminho (branch $branch integrada, limpa, $tamanho)"
       else
         echo "  REQUER_DECISAO: worktree $caminho (branch $branch, integrada: $integrada, alterações pendentes: $sujo, $tamanho)"
+        detalhar_pendentes "$repo" "$slug" "$caminho" "$branch"
       fi
   done
 
