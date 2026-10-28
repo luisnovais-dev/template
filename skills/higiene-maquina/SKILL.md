@@ -66,7 +66,12 @@ Para passar raízes: `ssh <host> 'bash -s -- <raiz>' < skills/higiene-maquina/sc
 
 ## Plataforma
 
-Testado em Linux. No Linux, o cwd dos processos é lido em `/proc`. Um processo com cmdline cujo cwd não pode ser lido (por exemplo, de outro usuário) faz a remoção recusar a worktree com código 2, como não verificado. Sem privilégio, isso acontece com daemons do sistema, então a remoção por `--remover` só roda quando esses processos não existem ou quando o mantenedor a executa com privilégio suficiente. No macOS, o cwd é verificado com `lsof`, e a remoção recusa a worktree quando não consegue verificar (código 2). Esse caminho não foi testado (ver D6 da Spec da #6).
+Testado em Linux. No Linux, o cwd dos processos é lido em `/proc`. Quando o cwd de um processo não pode ser lido, a remoção recusa a worktree com código 2 (não verificado), mas só se o processo pode estar dentro dela:
+- **Do próprio usuário:** sempre conta.
+- **De outro usuário:** conta só se nenhum diretório do caminho da worktree é bloqueado para outros (`x` para outros). Se algum bloqueia, o outro usuário não alcança a worktree e o processo é ignorado.
+- **De root:** ignorado. Não se verifica sem privilégio, e o mantenedor aceitou esse risco. Um processo de root dentro da worktree não é detectado pelo inventário.
+
+Sem privilégio, processos do próprio usuário que não deixam ler o cwd (por exemplo, `systemd --user`) ainda podem bloquear a remoção. Nesse caso, a remoção fica recusada até esses processos saírem. No macOS, o cwd é verificado com `lsof`, e a remoção recusa a worktree quando não consegue verificar (código 2). Esse caminho não foi testado (ver D6 da Spec da #6).
 
 ## Saída
 

@@ -372,18 +372,41 @@ recusar() {
   echo "RECUSADO: $1 $2: $3"
 }
 
+# 0 se outros usuários conseguem entrar em $1, isto é, se todo diretório do caminho tem execução
+# para outros. Se um deles não tem, nenhum outro usuário alcança $1. Erro de stat conta como alcance.
+alcancavel_por_outros() {
+  local d="$1" perm
+  while [ "$d" != "/" ]; do
+    perm=$(stat -c %a "$d" 2>/dev/null) || return 0
+    if [ $(( ${perm: -1} & 1 )) -eq 0 ]; then
+      return 1
+    fi
+    d=$(dirname "$d")
+  done
+  return 0
+}
+
 # 0 se algum processo tem o diretório atual dentro de $1, 1 se nenhum tem, 2 se não foi possível
-# verificar (sem /proc e sem lsof, ou cwd ilegível de processo com cmdline). Só 1 libera a remoção.
-# HIGIENE_PROC troca a raiz do /proc (usado nos testes).
+# verificar (sem /proc e sem lsof, ou cwd ilegível de processo que pode alcançar $1). Só 1 libera a
+# remoção. HIGIENE_PROC troca a raiz do /proc (usado nos testes).
 processo_dentro() {
-  local alvo="$1" p c cmd nao_verificado=0 raiz="${HIGIENE_PROC:-/proc}"
+  local alvo="$1" p c cmd dono eu nao_verificado=0 raiz="${HIGIENE_PROC:-/proc}"
+  eu=$(id -u)
   if [ -d "$raiz/self" ]; then
     for p in "$raiz"/[0-9]*; do
       c=$(readlink "$p/cwd" 2>/dev/null) || {
-        # Thread do kernel e zumbi não têm cmdline e não estão em diretório nenhum. Qualquer outro
-        # processo pode estar dentro do alvo, e isso não se verifica sem privilégio.
+        # Thread do kernel e zumbi não têm cmdline e não estão em diretório nenhum.
         cmd=$(tr -d '\0' 2>/dev/null < "$p/cmdline")
-        [ -n "$cmd" ] && nao_verificado=1
+        [ -n "$cmd" ] || continue
+        dono=$(stat -c %u "$p" 2>/dev/null) || continue
+        # Root: pode estar em qualquer lugar e não se verifica sem privilégio. Risco aceito pelo
+        # mantenedor (ver SKILL, Plataforma). Outro usuário só conta se alcança o alvo.
+        # O próprio usuário conta sempre: um processo seu dentro do alvo deve bloquear.
+        case "$dono" in
+          0) ;;
+          "$eu") nao_verificado=1 ;;
+          *) if alcancavel_por_outros "$alvo"; then nao_verificado=1; fi ;;
+        esac
         continue
       }
       case "$c" in
