@@ -4,7 +4,7 @@
 # quando o teste é interrompido por INT, TERM ou HUP.
 #
 # Uso num teste:
-#   . "$(dirname "$0")/lib.sh"
+#   . "$(dirname "$0")/lib/fixture.sh"
 #   fixture_iniciar
 #   fixture_repo_novo meu-repo          # cria origem bare e clone de trabalho
 #   ...
