@@ -373,16 +373,24 @@ recusar() {
 }
 
 # 0 se algum processo tem o diretório atual dentro de $1, 1 se nenhum tem, 2 se não foi possível
-# verificar (sem /proc e sem lsof). Só 1 libera a remoção.
+# verificar (sem /proc e sem lsof, ou cwd ilegível de processo com cmdline). Só 1 libera a remoção.
+# HIGIENE_PROC troca a raiz do /proc (usado nos testes).
 processo_dentro() {
-  local alvo="$1" p c
-  if [ -d /proc/self ]; then
-    for p in /proc/[0-9]*; do
-      c=$(readlink "$p/cwd" 2>/dev/null) || continue
+  local alvo="$1" p c cmd nao_verificado=0 raiz="${HIGIENE_PROC:-/proc}"
+  if [ -d "$raiz/self" ]; then
+    for p in "$raiz"/[0-9]*; do
+      c=$(readlink "$p/cwd" 2>/dev/null) || {
+        # Thread do kernel e zumbi não têm cmdline e não estão em diretório nenhum. Qualquer outro
+        # processo pode estar dentro do alvo, e isso não se verifica sem privilégio.
+        cmd=$(tr -d '\0' 2>/dev/null < "$p/cmdline")
+        [ -n "$cmd" ] && nao_verificado=1
+        continue
+      }
       case "$c" in
         "$alvo"|"$alvo"/*) return 0 ;;
       esac
     done
+    [ "$nao_verificado" -eq 1 ] && return 2
     return 1
   fi
   if command -v lsof >/dev/null 2>&1; then

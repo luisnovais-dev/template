@@ -46,9 +46,10 @@ git -C "$R" worktree add -q -b feat/6-c "$W/grupoB/z" main
 git -C "$R" worktree add -q -b feat/6-h "$W/h" main
 echo sujo > "$W/h/nao-commitado.txt"
 
-# Processo com o diretório dentro da worktree C: ela não pode ser removida.
-( cd "$W/grupoB/z" && exec sleep 15 ) &
-PID_C=$!
+# Processo com o diretório dentro da worktree C: ela não pode ser removida. Simulado na árvore
+# falsa de processos (HIGIENE_PROC), com o cwd apontando para a worktree.
+mkdir -p "$HIGIENE_PROC/4242"
+ln -s "$W/grupoB/z" "$HIGIENE_PROC/4242/cwd"
 
 # Lixo não versionado dentro do repositório, e um que deve sobrar porque não está na lista.
 echo tmp > "$R/_tmp1"
@@ -111,6 +112,4 @@ afirmar_igual "$([ -n "$(git -C "$R" branch --list feat/6-d)" ] && echo existe |
 afirmar_igual "$([ -n "$(git -C "$R" branch --list feat-f)" ] && echo existe || echo removida)" "existe" "branch recusada continua no repositório"
 afirmar_contem "$(cat "$FX_DADOS/docker_log" 2>/dev/null)" "rm tests-app-3999991-0b6ae018" "docker rm é chamado para o container órfão"
 
-kill "$PID_C" 2>/dev/null
-wait "$PID_C" 2>/dev/null
 exit 0

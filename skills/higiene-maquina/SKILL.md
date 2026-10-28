@@ -66,7 +66,7 @@ Para passar raízes: `ssh <host> 'bash -s -- <raiz>' < skills/higiene-maquina/sc
 
 ## Plataforma
 
-Testado em Linux. No macOS, o cwd dos processos é verificado com `lsof`, e a remoção recusa a worktree quando não consegue verificar (código 2). Esse caminho não foi testado (ver D6 da Spec da #6).
+Testado em Linux. No Linux, o cwd dos processos é lido em `/proc`. Um processo com cmdline cujo cwd não pode ser lido (por exemplo, de outro usuário) faz a remoção recusar a worktree com código 2, como não verificado. Sem privilégio, isso acontece com daemons do sistema, então a remoção por `--remover` só roda quando esses processos não existem ou quando o mantenedor a executa com privilégio suficiente. No macOS, o cwd é verificado com `lsof`, e a remoção recusa a worktree quando não consegue verificar (código 2). Esse caminho não foi testado (ver D6 da Spec da #6).
 
 ## Saída
 
