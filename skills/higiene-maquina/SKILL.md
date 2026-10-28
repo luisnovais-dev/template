@@ -31,7 +31,7 @@ Mostra o estado do que o trabalho com agentes deixou nesta máquina e remove som
 
 ## Classes
 
-- **SEGURO_REMOVER:** worktree limpa e integrada (ancestral de `origin/main`, ou PR mesclada por squash com a ponta conferida), e branch integrada sem worktree. Entra na lista aprovada.
+- **SEGURO_REMOVER:** worktree limpa e integrada (ancestral de `origin/main`, ou PR mesclada por squash com a ponta conferida), e branch integrada sem worktree. "Limpa" inclui arquivos ignorados pelo `.gitignore` (um `.env` local conta como pendência); só `node_modules` e `.agent/` ficam de fora da conta. Entra na lista aprovada.
 - **RESGATAR:** branch com commits fora do remoto vivo e sem PR mesclada. Inclui o caso em que o GitHub não pôde ser consultado. **Nunca** é segura. Confirme com o mantenedor antes de qualquer ação.
 - **REQUER_DECISAO:** worktree suja, HEAD solto com alterações, branch não integrada, branch integrada que está no checkout principal, ou branch sem PR mesclada cujo commit já existe no GitHub. Para worktree, o inventário lista os pendentes (até 20, com o total).
 - **RASCUNHO:** pendente de Spec ou documento não versionado (`*.md`, `docs/`, `openspec/`, `specs/`). Mostra `main=` (AUSENTE, IGUAL ou DIFERENTE em relação a `origin/main`) e `issue=` (IGUAL, DIFERENTE, AUSENTE, INDETERMINADO ou SEM_ISSUE, pela branch e pela issue no GitHub). O conteúdo nunca é impresso.

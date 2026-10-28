@@ -22,11 +22,12 @@ git -C "$R" push -q origin main
 git -C "$R" worktree add -q -b feat/6-espaco "$FX_DIR/wt/esp" main
 W="$FX_DIR/wt/esp"
 
-head -c 1048576 /dev/urandom > "$W/proprio.bin"            # 1 MB, só nesta worktree
-head -c 4194304 /dev/urandom > "$FX_DIR/store/compartilhado.bin"  # 4 MB, no store externo
-ln "$FX_DIR/store/compartilhado.bin" "$W/compartilhado.bin"  # hard link para dentro da worktree
+# Os artefatos ficam em node_modules: dependência regenerável não conta como pendência (F1).
 mkdir -p "$W/node_modules/.pnpm"
 echo "x" > "$W/node_modules/.pnpm/marca"
+head -c 1048576 /dev/urandom > "$W/node_modules/proprio.bin"            # 1 MB, só nesta worktree
+head -c 4194304 /dev/urandom > "$FX_DIR/store/compartilhado.bin"  # 4 MB, no store externo
+ln "$FX_DIR/store/compartilhado.bin" "$W/node_modules/compartilhado.bin"  # hard link para dentro da worktree
 
 saida=$(bash "$INV" "$FX_DIR/trabalho" 2>&1)
 

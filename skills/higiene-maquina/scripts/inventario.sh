@@ -196,12 +196,20 @@ else:
   echo "main=$main issue=#$n $issue"
 }
 
+# Pendências de uma worktree, uma linha por entrada do git. Inclui o que o .gitignore esconde
+# (um .env local, por exemplo). Ficam de fora as dependências regeneráveis (node_modules) e .agent/,
+# que tem contagem própria em agent_pendente.
+pendentes_worktree() {
+  git -C "$1" status --porcelain --ignored=matching --untracked-files=all 2>/dev/null \
+    | grep -v -E '^!! (.*/)?(node_modules|\.agent)/$'
+}
+
 # Lista os pendentes de uma worktree: até 20 caminhos, com o total. Pendente de Spec ou
 # documento não versionado vira RASCUNHO. Só caminhos e estados são impressos.
 detalhar_pendentes() {
   local repo="$1" slug="$2" caminho="$3" branch="$4" linha rel total
-  total=$(git -C "$caminho" status --porcelain --untracked-files=all 2>/dev/null | wc -l | tr -d ' ')
-  git -C "$caminho" status --porcelain --untracked-files=all 2>/dev/null | head -20 \
+  total=$(pendentes_worktree "$caminho" | wc -l | tr -d ' ')
+  pendentes_worktree "$caminho" | head -20 \
     | while IFS= read -r linha; do
       rel="${linha:3}"
       case "$linha" in
@@ -212,6 +220,8 @@ detalhar_pendentes() {
             *)
               echo "    pendente: $rel (??)" ;;
           esac ;;
+        '!! '*)
+          echo "    pendente: $rel (ignorado pelo .gitignore)" ;;
         *)
           echo "    pendente: $rel (${linha:0:2})" ;;
       esac
@@ -401,7 +411,7 @@ remover_worktree() {
   if [ ! -d "$alvo" ]; then
     recusar worktree "$alvo" "diretório não existe"; return 1
   fi
-  sujo=$(git -C "$alvo" status --porcelain --untracked-files=all 2>/dev/null | wc -l | tr -d ' ')
+  sujo=$(pendentes_worktree "$alvo" | wc -l | tr -d ' ')
   if [ "$sujo" != "0" ]; then
     recusar worktree "$alvo" "alterações pendentes ($sujo)"; return 1
   fi
@@ -627,7 +637,7 @@ for repo in "${UNICOS[@]}"; do
         echo "  ORFAO: worktree $caminho (branch $branch) sem diretório. Use 'git worktree prune' somente após confirmação."
         continue
       fi
-      sujo=$(( $(git -C "$caminho" status --porcelain 2>/dev/null | wc -l | tr -d ' ') + $(agent_pendente "$caminho") ))
+      sujo=$(( $(pendentes_worktree "$caminho" | wc -l | tr -d ' ') + $(agent_pendente "$caminho") ))
       tamanho=$(du -sh "$caminho" 2>/dev/null | cut -f1)
       if [ "$branch" = "DETACHED" ]; then
         ref=$(git -C "$caminho" rev-parse HEAD 2>/dev/null)
