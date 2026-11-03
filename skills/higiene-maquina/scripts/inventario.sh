@@ -382,13 +382,19 @@ recusar() {
   echo "RECUSADO: $1 $2: $3"
 }
 
-# 0 se outros usuários conseguem entrar em $1, isto é, se todo diretório do caminho tem execução
-# para outros. Se um deles não tem, nenhum outro usuário alcança $1. Erro de stat conta como alcance.
+# 0 se outros usuários podem entrar em $1: todo diretório do caminho tem execução para outros, para
+# o grupo, ou tem ACL (que não se lê aqui, então conta como alcance). Se um diretório não tem nada
+# disso, nenhum outro usuário passa por ele. Erro de stat conta como alcance.
 alcancavel_por_outros() {
-  local d="$1" perm
+  local d="$1" perm modo
   while [ "$d" != "/" ]; do
     perm=$(stat -c %a "$d" 2>/dev/null) || return 0
-    if [ $(( ${perm: -1} & 1 )) -eq 0 ]; then
+    # ls mostra o '+' de ACL; stat -c %A não mostra. Um único diretório, sem listar conteúdo.
+    # shellcheck disable=SC2012
+    modo=$(ls -ld -- "$d" 2>/dev/null | awk '{print $1}') || return 0
+    [ -n "$modo" ] || return 0
+    if [ $(( ${perm: -1} & 1 )) -eq 0 ] && [ $(( ${perm: -2:1} & 1 )) -eq 0 ] \
+      && [ "${modo: -1}" != "+" ]; then
       return 1
     fi
     d=$(dirname "$d")
