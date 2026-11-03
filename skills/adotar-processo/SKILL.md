@@ -45,7 +45,7 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 5. **ADRs iniciais.** Proponha como ADRs, com status "Proposto", as decisões de stack, estrutura de pastas, autenticação, deploy e ambientes. Cada uma vai para `docs/adr/` como "Aceito" somente depois do aceite do mantenedor, na conversa.
 6. **CI.** Proponha um workflow mínimo que roda os comandos configurados (lint, testes, build). Criá-lo exige aprovação do mantenedor. Se ainda não houver comandos, registre a CI como "não configurada", sem marcar nada como aprovado.
 7. **Harness.** Garanta que o `CLAUDE.md` do projeto importe `AGENTS.md`. Oriente a instalação das skills por máquina com `instalar-processo`.
-8. **Identidade de teste.** Documente em `docs/ambientes.md` os usuários sintéticos por perfil para local e preview, e o teste que prova a indisponibilidade em produção. Não crie usuário real nem credencial.
+8. **Identidade de teste.** Documente em `docs/ambientes.md` os usuários sintéticos por perfil em DEV, a conta de teste do sandbox em STAGING, e o teste que prova a indisponibilidade em produção. Não crie usuário real nem credencial.
 9. **Épico de walking skeleton.** Proponha um épico que entrega a fatia ponta a ponta mínima (uma tela ou rota, uma persistência, o deploy de preview), com a suíte de aceite pendente. Criá-lo exige autorização na invocação. As filhas são escolhidas pelo mantenedor.
 
 ## Modo `existente`: adequação de projeto com código
@@ -92,4 +92,4 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 - Não crie repositório, label, configuração de branch, workflow ou PR sem autorização na invocação.
 - Não apague branch, label ou arquivo sem lista e confirmação.
 - Não deixe placeholder em `comandos` ou `ambientes` sem sinalizar.
-- Não crie usuário real ou credencial de teste fora de local e preview.
+- Não crie usuário real ou credencial de teste fora de DEV e STAGING.

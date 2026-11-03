@@ -7,6 +7,8 @@ description: Cria a pull request de uma branch auditada e aceita pelo mantenedor
 
 Cria a PR da branch auditada. Não faz merge.
 
+Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/PROCESSO.md` (seção Estado real antes de agir). Se a PR estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue, pare e reporte, sem agir.
+
 ## Entrada
 
 - Número da issue, branch e worktree.

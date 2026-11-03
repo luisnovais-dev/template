@@ -76,8 +76,8 @@ Para cada item abaixo, a Spec declara se ele se aplica à mudança. Quando se ap
 20. **Autorização por perfil e isolamento entre clientes:** cada perfil acessa somente as funções que lhe cabem, e dados de um cliente nunca são visíveis a outro. O teste cobre um acesso permitido e um negado para cada perfil.
 21. **Trilha de auditoria:** ações sensíveis (autenticação, alteração de permissão, exclusão, exportação e dado financeiro) registram quem, quando, o quê e o resultado, sem dados sensíveis no registro.
 22. **Cabeçalhos de segurança:** respostas HTTP definem política de conteúdo, proteção contra embutimento em outras origens, `X-Content-Type-Options` e política de referrer. O teste verifica os cabeçalhos na resposta.
-23. **Guarda do modo de teste:** identidades e atalhos de teste só existem em local e em preview. Um teste prova que eles estão indisponíveis em produção (ver `docs/PROCESSO.md`, seção Ambientes).
-24. **Plano de reversão de schema:** toda migração declara o tipo (aditiva, transformadora ou destrutiva), a reversão planejada e o ensaio no clone de produção, conforme `docs/PROCESSO.md`.
+23. **Guarda do modo de teste:** identidades e atalhos de teste só existem em DEV e na conta de teste do sandbox de STAGING. Um teste prova que eles estão indisponíveis em produção (ver `docs/PROCESSO.md`, seção Ambientes).
+24. **Plano de reversão de schema:** toda migração declara o tipo (aditiva, transformadora ou destrutiva), a reversão planejada e o ensaio em STAGING, conforme `docs/PROCESSO.md`.
 
 A Spec que não aplica um item cita a justificativa. O revisor independente confere a lista na etapa de review.
 
