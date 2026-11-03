@@ -66,6 +66,8 @@ Para remover, copie as linhas da seção `LISTA PARA APROVAÇÃO` para um arquiv
 
 Cada item é revalidado antes de ser removido. O modo mostra `REMOVIDO:` ou `RECUSADO:` por item e sai com código 3 se algo foi recusado. Ele nunca remove arquivo versionado, branch remota, worktree suja, worktree com processo rodando dentro, nem branch que não esteja integrada.
 
+**Limitação em Linux sem privilégio.** Processos do próprio usuário com cwd ilegível, como `systemd --user`, `sd-pam`, `sshd` e `ssh-agent`, fazem o `--remover` recusar a worktree com código 2 (não verificado). Isso vale em qualquer sessão de desktop ou SSH. Decisão do mantenedor, registrada na PR #7: aceito como risco documentado. Para remover uma worktree integrada e limpa nesse caso, use `git worktree remove <caminho>` (sem `--force`). Ele recusa alterações e arquivos não versionados, mas remove arquivos ignorados pelo `.gitignore` (como um `.env`) sem aviso. Confira esses arquivos antes. Processos de root não são verificados sem privilégio (ver `skills/higiene-maquina/SKILL.md`, seção Plataforma).
+
 Para inventariar outra máquina, sem copiar nada para lá:
 
 ```bash

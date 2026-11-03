@@ -71,7 +71,7 @@ Testado em Linux. No Linux, o cwd dos processos é lido em `/proc`. Quando o cwd
 - **De outro usuário:** conta só se nenhum diretório do caminho da worktree é bloqueado para outros (`x` para outros). Se algum bloqueia, o outro usuário não alcança a worktree e o processo é ignorado.
 - **De root:** ignorado. Não se verifica sem privilégio, e o mantenedor aceitou esse risco. Um processo de root dentro da worktree não é detectado pelo inventário.
 
-Sem privilégio, processos do próprio usuário que não deixam ler o cwd (por exemplo, `systemd --user`) ainda podem bloquear a remoção. Nesse caso, a remoção fica recusada até esses processos saírem. No macOS, o cwd é verificado com `lsof`, e a remoção recusa a worktree quando não consegue verificar (código 2). Esse caminho não foi testado (ver D6 da Spec da #6).
+Sem privilégio, processos do próprio usuário que não deixam ler o cwd (`systemd --user`, `sd-pam`, `sshd`, `ssh-agent`) bloqueiam a remoção por `--remover` enquanto estiverem rodando. Isso vale em qualquer sessão de desktop ou SSH. O mantenedor aceitou esse risco, registrado na PR #7. Nesse caso, a remoção manual por `git worktree remove <caminho>` (sem `--force`) é o caminho, mas ele remove arquivos ignorados sem aviso. No macOS, o cwd é verificado com `lsof`, e a remoção recusa a worktree quando não consegue verificar (código 2). Esse caminho não foi testado (ver D6 da Spec da #6).
 
 ## Saída
 
