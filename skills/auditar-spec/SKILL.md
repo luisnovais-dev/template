@@ -7,6 +7,8 @@ description: Audita uma implementação contra sua Spec, classificando cada Requ
 
 Verifica se a implementação cumpre a Spec. Não cria PR.
 
+Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/PROCESSO.md` (seção Estado real antes de agir). Se a PR estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue, pare e reporte, sem agir.
+
 ## Entrada
 
 - Número da issue e a branch implementada.

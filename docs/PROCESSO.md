@@ -33,6 +33,16 @@ Não há número fixo de tickets por épico, nem estimativa em unidades de tempo
 | 5.3. Re-review | `review-pr` (modo re-review) | Correções | Status de cada finding e nova verificação do diff incremental |
 | 6. Merge gate | `merge-gate` | PR com review válido | Squash merge, branch e worktree limpas, e fechamento do épico quando for o último ticket |
 
+### Estado real antes de agir
+
+Antes de cada etapa que age sobre a issue ou a PR (implementar, auditar, abrir PR, review, merge e tratar findings), a skill confere no GitHub o estado da issue e das PRs ligadas à branch. O registro local em `.agent/` não basta.
+
+1. Estado da issue: `gh issue view <n> --json state`.
+2. PRs da branch: `gh pr list --head <branch> --state all --json number,state`.
+3. PRs e branches ligadas à issue: GraphQL `closedByPullRequestsReferences(includeClosedPrs: true)`, `gh issue develop --list <n>`, e `git ls-remote --heads origin` filtrado por `*/<n>-*`.
+
+A skill para e reporta, sem agir, se a issue estiver fechada, se a PR da branch estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue. Em `implementar-spec`, a parada também acontece se já houver branch ou PR da issue no remoto.
+
 ### Etapa 0: relato para issue
 
 A skill `relato-para-issue` traduz o relato em: pessoa e situação, dor, contorno atual, resultado esperado, capacidade, cenários derivados e tipo. Hipóteses viram pergunta. Temas misturados são separados em issues distintas. Antes de publicar, a busca por duplicatas abertas e fechadas é obrigatória. A issue usa o formulário YAML de `.github/ISSUE_TEMPLATE/`. Uma issue só entra em trabalho depois de aprovada.
@@ -144,39 +154,53 @@ Quando há fronteira entre front e back, existe uma fonte única da interface, c
 
 ### Feature flag
 
-Feature flag é obrigatório quando código mesclado expõe ao usuário um comportamento incompleto. O flag fica desligado em produção, ligado em local e em preview, e é removido no ticket que fecha o épico.
+Feature flag é obrigatório quando código mesclado expõe ao usuário um comportamento incompleto. O flag fica desligado em produção, ligado em DEV e em STAGING, e é removido no ticket que fecha o épico.
 
 ## Ambientes
 
 A matriz de ambientes fica na [Configuração](#configuração), chave `ambientes`. Ela define, para cada ambiente, se o agente pode ler, testar, escrever dados e fazer deploy sem pedir nova autorização na invocação. É a única pré-autorização permanente que o processo admite, e só vale para as células marcadas como `sim`.
 
-- **Local e DEV** podem ser pré-autorizados pela matriz, conforme configurado.
-- **STAGING** segue a mesma regra, conforme configurado.
-- **CLONE_PROD** é o ambiente de ensaio de migração. Nunca é escrito pelo E2E automático. Escrita para ensaio de migração exige instrução explícita na invocação, mesmo que a matriz esteja configurada.
+Os ambientes são três: DEV, STAGING e PROD.
+
+- **DEV** é o desenvolvimento, com dados sintéticos. A máquina local de desenvolvimento segue a linha `dev` da matriz. Pode ser pré-autorizado pela matriz, conforme configurado.
+- **STAGING** é o preview. É um clone sandbox de produção: dados copiados de produção, isolados dela. Não tem dados sintéticos. Segue a regra da matriz, conforme configurado, com as restrições de [STAGING](#staging).
 - **PROD** nunca é pré-autorizado para escrita, teste ou deploy. Leitura só ocorre por acesso somente leitura configurado e com pedido explícito.
 - Testes e comandos de escrita conferem o alvo antes de executar (invariante 5 de [`AGENTS.md`](../AGENTS.md)).
 
-### Preview
+### STAGING
 
-Preview tem build igual ao de produção, dados sintéticos, segredos próprios, acesso protegido e usuários de teste. Mudança sensível exige aceite no preview, ou o flag desligado quando não houver preview.
+STAGING é o preview: build igual ao de produção, clone sandbox de produção, segredos próprios e acesso protegido. Mudança sensível exige aceite em STAGING, ou o flag desligado quando não houver STAGING.
+
+Dados copiados de produção em STAGING:
+
+- não saem do ambiente para chat, issue, PR, log ou arquivo do repositório;
+- o E2E automático só escreve em STAGING se a matriz permitir (`staging.escrever_dados: sim`);
+- a recriação do sandbox a partir de produção exige instrução explícita na invocação.
 
 ### Identidade de teste
 
-- Usuários sintéticos por perfil existem em local e em preview. A sessão de teste é obtida sem interação para o agente.
-- Há um teste que prova a indisponibilidade desses usuários em produção.
+- Usuários sintéticos por perfil e fixtures existem só em DEV. A sessão de teste em DEV é obtida sem interação para o agente.
+- Em STAGING, a identidade de teste é uma conta criada no sandbox, recriada depois de cada recriação do sandbox. Nunca é credencial de pessoa real.
+- Há um teste que prova a indisponibilidade desses usuários e atalhos em produção. Ele é obrigatório.
 - O agente nunca usa credencial real de pessoa.
 
-### Clone de produção
+### Ensaio de migração em STAGING
 
-O clone de produção é o ambiente de ensaio de migrações. Ele é isolado, nunca é escrito pelo E2E automático, é recriado sob demanda e tem os definers removidos. Antes de migração, a reversão é planejada por tipo:
+O ensaio de migrações acontece em STAGING. Ele é isolado de produção, nunca é escrito pelo E2E automático e é recriado sob demanda, com instrução explícita. Antes de migração, a reversão é planejada por tipo:
 
 - **aditiva** (coluna que aceita nulo, tabela nova, índice): conferir que o backup automático do provedor existe e é recente. Não exige dump. A reversão é remover o que foi adicionado.
 - **transformadora** (troca de tipo, backfill, mudança de formato): expandir e contrair. A migração cria o novo ao lado do antigo, o backfill preenche o novo, o código passa a usar o novo, e o antigo só é removido em outra entrega. Antes, dump somente das tabelas afetadas.
-- **destrutiva** (remoção de coluna, tabela ou dados): ensaio no clone de produção, que mede a duração e valida a volta, e dump das tabelas afetadas antes da execução. Exige instrução explícita na invocação.
+- **destrutiva** (remoção de coluna, tabela ou dados): ensaio em STAGING, que mede a duração e valida a volta, e dump das tabelas afetadas antes da execução. Exige instrução explícita na invocação.
 
 Dump completo do banco não é exigido em nenhum dos tipos.
 
 O baseline de schema fica numa PR própria, e a CI verifica paridade entre o schema e o baseline.
+
+### Serviços locais e mecanismos de teste
+
+- Compose de desenvolvimento e de teste não usa `restart: unless-stopped` nem `always`. O serviço sobe quando o trabalho precisa dele (containers sob demanda). Esses restart policies fazem os containers religarem a cada boot.
+- Mecanismo de teste que cria recurso (container, volume, rede, banco ou pasta temporária) o remove ao terminar, inclusive quando a execução é interrompida. Ele trata os sinais (INT, TERM, HUP), e não só o `finally`.
+- O nome do recurso segue `<projeto>-<finalidade>-<pid>-<8 hex>`, em que `<pid>` é o PID do processo que coordena a execução. A [higiene da máquina](#skills) reconhece esse formato para separar órfão de ativo.
 
 ## Segredos
 
@@ -194,7 +218,7 @@ A Spec lista os Requisitos de Segurança acionados pela superfície da mudança.
 - trilha de auditoria para ações sensíveis;
 - cabeçalhos de segurança em respostas HTTP;
 - guarda do modo de teste, que impede ativar identidade de teste em produção;
-- plano de reversão de schema, conforme [Clone de produção](#clone-de-produção).
+- plano de reversão de schema, conforme [Ensaio de migração em STAGING](#ensaio-de-migração-em-staging).
 
 ## Interface
 
@@ -237,7 +261,7 @@ Quando a mudança altera o que o projeto faz, para quem serve ou o seu status, a
 | `docs/adr/` | Decisões transversais, uma por arquivo |
 | `docs/dominio.md` | Glossário do domínio |
 | `docs/arquitetura.md` | Visão da arquitetura |
-| `docs/ambientes.md` | Ambientes, preview e identidade de teste |
+| `docs/ambientes.md` | Ambientes (DEV, STAGING e PROD) e identidade de teste |
 | `docs/funcionalidades/` | Uma página por funcionalidade entregue |
 | `docs/design-system/` | Tokens e componentes, quando houver interface |
 | `docs/referencias/<épico-ou-issue>/` | Referências enviadas pelo usuário, com manifesto |
@@ -325,7 +349,7 @@ Worktree é temporária. Ela é criada para uma mudança e removida ao fim do tr
 - Antes de remover, confirme que não há trabalho não publicado. Não remova worktree de outra sessão, nem limpe branch, worktree ou artefato de outra sessão automaticamente. Liste o alvo, confirme que não está associado a trabalho ativo e peça confirmação.
 - Use `git worktree list` para inspecionar, independentemente da localização.
 - Branch remota de feature é apagada após o squash merge. Branch local é apagada após o merge, se não houver trabalho não publicado.
-- Nenhuma worktree ou branch é removida sem confirmação de que não há trabalho ativo. A skill `higiene-maquina` lista o estado e pede confirmação.
+- Nenhuma worktree ou branch é removida sem confirmação de que não há trabalho ativo. A skill `higiene-maquina` lista o estado e pede confirmação. A remoção acontece pela lista aprovada, com `inventario.sh --remover`, que revalida cada item antes de agir.
 
 ## Identidade GitHub
 
@@ -347,7 +371,7 @@ Se as skills não estiverem disponíveis no ambiente de execução (por exemplo,
 Bloco lido pelas skills. Cada projeto que adote o processo preenche os valores, com `adotar-processo`. Enquanto houver placeholder, a skill que depende do valor deve pedir a informação em vez de assumi-la.
 
 ```yaml
-processo_versao: 2
+processo_versao: 3
 branch_base: <!-- main remoto, ex.: main -->
 prefixos_branch: [feat/, fix/, docs/]
 label_tipo: <!-- label type:* escolhido para a PR, exatamente um -->
@@ -368,13 +392,11 @@ comandos:
 ambiente_local: <!-- comando para subir o ambiente local, ou referência à skill ambiente-dev -->
 ambientes:
   # Matriz: sim = pré-autorizado na invocação; nao = exige instrução explícita.
-  # CLONE_PROD: escrita de ensaio de migração exige instrução na invocação, mesmo com sim.
+  # STAGING: escrita de ensaio de migração e recriação do sandbox exigem instrução na invocação, mesmo com sim.
   # PROD: leitura só com acesso somente leitura configurado e com pedido. Nunca pré-autorizado.
-  local:       {ler: sim, testar: sim, escrever_dados: sim, deploy: nao}
-  dev:         {ler: sim, testar: <!-- sim ou nao -->, escrever_dados: <!-- sim ou nao -->, deploy: <!-- sim ou nao -->}
-  staging:     {ler: sim, testar: <!-- sim ou nao -->, escrever_dados: <!-- sim ou nao -->, deploy: <!-- sim ou nao -->}
-  clone_prod:  {ler: sim, testar: nao, escrever_dados: nao, deploy: nao}
-  prod:        {ler: nao, testar: nao, escrever_dados: nao, deploy: nao}
+  dev:      {ler: sim, testar: <!-- sim ou nao -->, escrever_dados: <!-- sim ou nao -->, deploy: <!-- sim ou nao -->}
+  staging:  {ler: sim, testar: <!-- sim ou nao -->, escrever_dados: <!-- sim ou nao -->, deploy: <!-- sim ou nao -->}
+  prod:     {ler: nao, testar: nao, escrever_dados: nao, deploy: nao}
 stack:
   gerenciador_pacotes: <!-- ex.: nome do gerenciador -->
   lockfile: <!-- arquivo único de lock -->

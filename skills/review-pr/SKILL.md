@@ -7,6 +7,8 @@ description: Faz o review independente de uma pull request, em contexto novo e s
 
 Revisa a PR sem alterar código. O revisor não participou da implementação.
 
+Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/PROCESSO.md` (seção Estado real antes de agir). Se a PR estiver mesclada ou fechada, ou se outra branch ou PR estiver ligada à issue, pare e reporte, sem agir.
+
 ## Entrada
 
 - Número da PR e da issue.

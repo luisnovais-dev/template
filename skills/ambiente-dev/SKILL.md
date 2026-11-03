@@ -18,8 +18,8 @@ description: Esqueleto para subir e verificar o ambiente de desenvolvimento loca
 3. **Variáveis de ambiente:** nome das variáveis, de onde vêm e qual o modelo versionado. O `.env` fica na raiz do checkout principal, com prefixos por ambiente. Preencha o `.env` com `op inject` a partir do `.env.example`. Valores reais nunca entram no repositório. Placeholder: `<comando de op inject>`.
 4. **Conferência de chaves:** comando `env:check` (chave `env_check` da Configuração), que confere a presença das chaves sem exibir valores. Placeholder: `<comando env:check>`.
 5. **Serviços locais:** banco, filas, armazenamento ou outros serviços e como iniciá-los. Placeholder: `<comando para iniciar serviços>`.
-6. **Dados de desenvolvimento:** como preparar dados sintéticos. Placeholder: `<comando de seed ou fixture>`.
-7. **Identidade de teste:** usuários sintéticos por perfil, como a sessão de teste é obtida sem interação, e o teste que prova a indisponibilidade em produção. Placeholder: `<usuários e comando de sessão>`.
+6. **Dados de desenvolvimento (DEV):** como preparar dados sintéticos. Placeholder: `<comando de seed ou fixture>`.
+7. **Identidade de teste (DEV):** usuários sintéticos por perfil, como a sessão de teste é obtida sem interação, e o teste que prova a indisponibilidade em produção. Placeholder: `<usuários e comando de sessão>`.
 8. **Execução:** comando que sobe a aplicação em modo de desenvolvimento. Placeholder: `<comando de execução>`, com a URL local resultante.
 9. **Verificação:** comandos de lint, testes, tipos e build, idênticos aos da seção Configuração de `docs/PROCESSO.md`.
 
@@ -28,6 +28,8 @@ description: Esqueleto para subir e verificar o ambiente de desenvolvimento loca
 - Antes de executar testes ou qualquer comando que escreva dados, confira o alvo: host, porta e nome do banco ou serviço. Nunca aponte para produção.
 - A matriz de ambientes da Configuração (`ambientes` em `docs/PROCESSO.md`) define o que o agente pode fazer em cada ambiente. Ambiente sem permissão na matriz exige instrução explícita.
 - Serviços e dados de teste são isolados do ambiente de desenvolvimento compartilhado.
+- Containers de desenvolvimento e de teste sobem sob demanda: compose sem `restart: unless-stopped` nem `always` (ver `docs/PROCESSO.md`, seção Serviços locais e mecanismos de teste).
+- Mecanismo de teste que cria container, volume, rede ou pasta temporária remove o que criou, inclusive quando a execução é interrompida por INT, TERM ou HUP. O nome segue `<projeto>-<finalidade>-<pid>-<8 hex>`.
 - Não registre segredos, tokens ou credenciais ao documentar os passos.
 - Nunca use credencial real de pessoa para testar.
 

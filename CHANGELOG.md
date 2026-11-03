@@ -2,6 +2,30 @@
 
 Cada versão do processo tem uma entrada. O `adotar-processo`, no modo `atualizar`, lê as notas de migração entre a `processo_versao` do projeto e a versão atual, nesta ordem.
 
+## 3
+
+Ambientes reais (DEV, STAGING e PROD), higiene da máquina com lista aprovada e README de uso.
+
+- Matriz de ambientes com três linhas: `dev`, `staging` e `prod`. `local` e `clone_prod` saem da Configuração. A máquina local segue a linha `dev`.
+- STAGING é o preview e um clone sandbox de produção, com dados copiados de produção e sem dados sintéticos. O ensaio de migração acontece em STAGING.
+- Identidade de teste: usuários sintéticos só em DEV. Em STAGING, uma conta criada no sandbox.
+- Containers de desenvolvimento e de teste sobem sob demanda, sem `restart: unless-stopped` nem `always`. Mecanismos de teste removem o que criam, inclusive quando são interrompidos. Os nomes de recursos seguem `<projeto>-<finalidade>-<pid>-<8 hex>`.
+- Estado real antes de agir: as skills de etapa conferem a issue e a PR no GitHub antes de agir, sem confiar só no `.agent/`.
+- `higiene-maquina`: branch integrada por squash só é segura com PR mesclada e ponta conferida. Recursos Docker órfãos de execuções de teste são listados. O espaço mostrado é o realmente liberável. Há aviso acima de 90% de disco. RASCUNHO mostra a comparação com a `main` e com a issue. A remoção acontece pela lista aprovada, com revalidação (`--remover`). A máquina pode ser inventariada por entrada padrão via ssh.
+- `scripts/testar-template.sh` roda os testes automatizados da higiene.
+- README com a seção de uso no dia a dia.
+
+### Notas de migração desde a versão 2
+
+Para um projeto que já adotou a versão 2:
+
+1. Na Configuração de `docs/PROCESSO.md` do projeto, substitua as linhas `local` e `clone_prod` pela matriz de três linhas: `dev`, `staging` e `prod`. Os valores de `dev` vêm do que era `local` (se o projeto confirmar), ou do que era `dev`. Os valores de `staging` são os de `staging`. `prod` fica sempre `nao`. Projeto sem staging marca `nao` e registra o motivo.
+2. Atualize `docs/PROCESSO.md` pelo manifesto (modo `copy`), preservando a Configuração do projeto: recoloque os valores de `comandos`, `ambientes` e `stack`. Defina `processo_versao: 3`.
+3. Atualize `docs/ambientes.md`: DEV tem os dados sintéticos e as identidades de teste. STAGING é o sandbox de produção, com a conta de teste criada nele. Remova do texto qualquer referência a preview com dados sintéticos ou a clone de produção.
+4. Revise os compose de desenvolvimento e de teste. Retire `restart: unless-stopped` e `always`. Esse é um trabalho de adequação do projeto: não faça na adoção, e registre como ticket da adequação se houver muitos serviços.
+5. Revise os mecanismos de teste que criam recursos (container, volume, rede, banco, pasta temporária). Eles precisam remover o que criaram também quando são interrompidos, e usar o nome `<projeto>-<finalidade>-<pid>-<8 hex>`. Também é trabalho de adequação do projeto.
+6. Confirme que as skills de etapa do projeto estão instaladas (ver a seção Skills de `docs/PROCESSO.md`). A instalação por máquina traz as versões novas com `instalar-processo --atualizar`.
+
 ## 2
 
 Reescrita do processo para fatias verticais, Spec pronta, validação dentro do ticket e distribuição por máquina.
