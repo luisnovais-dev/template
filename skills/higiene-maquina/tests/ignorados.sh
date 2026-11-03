@@ -11,7 +11,7 @@ fixture_iniciar
 fixture_repo_novo ig
 R="$FX_DIR/trabalho/ig"
 mkdir -p "$FX_DIR/wt"
-printf '.env\nnode_modules/\n' > "$R/.gitignore"
+printf '.env\nnode_modules/\n.venv/\n' > "$R/.gitignore"
 git -C "$R" add .gitignore
 git -C "$R" commit -q -m "ignora segredos e dependências"
 git -C "$R" push -q origin main
@@ -26,8 +26,15 @@ N="$FX_DIR/wt/nm"
 mkdir -p "$N/node_modules/pkg"
 echo "x" > "$N/node_modules/pkg/index.js"
 
+# Integrada, limpa, só com ambiente virtual ignorado (.venv, regenerável por padrão): é segura.
+git -C "$R" worktree add -q -b feat/6-venv "$FX_DIR/wt/venv" main
+V="$FX_DIR/wt/venv"
+mkdir -p "$V/.venv/lib"
+echo "x" > "$V/.venv/lib/a.py"
+
 saida=$(bash "$INV" "$FX_DIR/trabalho" 2>&1)
 afirmar_contem "$saida" "REQUER_DECISAO: worktree $W" "arquivo ignorado com conteúdo local impede SEGURO_REMOVER"
+afirmar_contem "$saida" "SEGURO_REMOVER: worktree $V" ".venv ignorado é regenerável por padrão e não impede a remoção"
 afirmar_contem "$saida" "pendente: .env" "o arquivo ignorado aparece na lista de pendências"
 afirmar_nao_contem "$saida" "SEGURO_REMOVER: worktree $W" "a worktree com .env não é proposta para remoção"
 afirmar_contem "$saida" "SEGURO_REMOVER: worktree $N" "node_modules ignorado não impede a remoção"

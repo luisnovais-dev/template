@@ -8,6 +8,9 @@
 # Variáveis:
 #   HIGIENE_DONOS  donos de remoto reconhecidos, separados por espaço (ex.: "onluis-dev luisnovais-dev").
 #                  Remoto de dono fora dessa lista vira REMOTO_LEGADO para revisão.
+#   HIGIENE_REGENERAVEIS  pastas ignoradas que não bloqueiam a remoção de worktree, separadas por espaço.
+#                  Padrão: "node_modules .next dist coverage .venv". Pasta fora dessa lista e ignorada
+#                  pelo .gitignore (um .env, por exemplo) bloqueia a remoção.
 #
 # Não altera nada: não remove, não faz checkout, não faz fetch. Lê o remoto
 # com ls-remote e o estado de PR com gh (somente leitura). Imprime caminhos,
@@ -197,11 +200,18 @@ else:
 }
 
 # Pendências de uma worktree, uma linha por entrada do git. Inclui o que o .gitignore esconde
-# (um .env local, por exemplo). Ficam de fora as dependências regeneráveis (node_modules) e .agent/,
-# que tem contagem própria em agent_pendente.
+# (um .env local, por exemplo). Ficam de fora as pastas regeneráveis (HIGIENE_REGENERAVEIS, padrão
+# node_modules, .next, dist, coverage e .venv) e .agent/, que tem contagem própria em agent_pendente.
 pendentes_worktree() {
+  local nome padrao='^!! (.*/)?(\.agent'
+  local -a nomes=()
+  read -ra nomes <<< "${HIGIENE_REGENERAVEIS:-node_modules .next dist coverage .venv}"
+  for nome in "${nomes[@]}"; do
+    padrao+="|$(printf '%s' "$nome" | sed 's/\./\\./g')"
+  done
+  padrao+=')/$'
   git -C "$1" status --porcelain --ignored=matching --untracked-files=all 2>/dev/null \
-    | grep -v -E '^!! (.*/)?(node_modules|\.agent)/$'
+    | grep -v -E "$padrao"
 }
 
 # Lista os pendentes de uma worktree: até 20 caminhos, com o total. Pendente de Spec ou
