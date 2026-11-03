@@ -47,9 +47,9 @@ git -C "$R" worktree add -q -b feat/6-h "$W/h" main
 echo sujo > "$W/h/nao-commitado.txt"
 
 # Processo com o diretório dentro da worktree C: ela não pode ser removida. Simulado na árvore
-# falsa de processos (HIGIENE_PROC), com o cwd apontando para a worktree.
-mkdir -p "$HIGIENE_PROC/4242"
-ln -s "$W/grupoB/z" "$HIGIENE_PROC/4242/cwd"
+# falsa de processos (HIGIENE_TESTE_PROC), com o cwd apontando para a worktree.
+mkdir -p "$HIGIENE_TESTE_PROC/4242"
+ln -s "$W/grupoB/z" "$HIGIENE_TESTE_PROC/4242/cwd"
 
 # Lixo não versionado dentro do repositório, e um que deve sobrar porque não está na lista.
 echo tmp > "$R/_tmp1"

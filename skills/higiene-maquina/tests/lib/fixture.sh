@@ -134,8 +134,8 @@ STUB
   chmod +x "$FX_DIR/bin/gh" "$FX_DIR/bin/df" "$FX_DIR/bin/docker"
   export PATH="$FX_DIR/bin:$PATH"
   # Árvore de processos falsa: sem processos reais, que podem estar dentro de uma worktree de teste.
-  export HIGIENE_PROC="$FX_DIR/proc"
-  mkdir -p "$HIGIENE_PROC/self"
+  export HIGIENE_TESTE_PROC="$FX_DIR/proc"
+  mkdir -p "$HIGIENE_TESTE_PROC/self"
 }
 
 # Cria um repositório de teste com origem bare e clone de trabalho. O clone de trabalho

@@ -404,9 +404,9 @@ alcancavel_por_outros() {
 
 # 0 se algum processo tem o diretório atual dentro de $1, 1 se nenhum tem, 2 se não foi possível
 # verificar (sem /proc e sem lsof, ou cwd ilegível de processo que pode alcançar $1). Só 1 libera a
-# remoção. HIGIENE_PROC troca a raiz do /proc (usado nos testes).
+# remoção. HIGIENE_TESTE_PROC troca a raiz do /proc (usado nos testes).
 processo_dentro() {
-  local alvo="$1" p c cmd dono eu nao_verificado=0 raiz="${HIGIENE_PROC:-/proc}"
+  local alvo="$1" p c cmd dono eu nao_verificado=0 raiz="${HIGIENE_TESTE_PROC:-/proc}"
   eu=$(id -u)
   if [ -d "$raiz/self" ]; then
     for p in "$raiz"/[0-9]*; do

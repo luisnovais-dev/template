@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # F2 (review da PR #7): processo cujo cwd não pode ser lido pode estar dentro da worktree. Então a
 # remoção é recusada com código 2 (não verificado). Thread do kernel e zumbi (sem cmdline) não
-# contam. A árvore de processos vem de HIGIENE_PROC, que aponta para uma pasta falsa no teste.
+# contam. A árvore de processos vem de HIGIENE_TESTE_PROC, que aponta para uma pasta falsa no teste.
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=lib/fixture.sh
 . "$(dirname "$0")/lib/fixture.sh"
@@ -25,7 +25,7 @@ lista="$FX_DADOS/lista.tsv"
 printf 'SEGURO_REMOVER\tworktree\t%s\t%s\n' "$R" "$W" > "$lista"
 
 rc=0
-saida=$(HIGIENE_PROC="$PROC" bash "$INV" --remover "$lista" 2>&1) || rc=$?
+saida=$(HIGIENE_TESTE_PROC="$PROC" bash "$INV" --remover "$lista" 2>&1) || rc=$?
 afirmar_igual "$rc" "3" "cwd ilegível de processo com cmdline recusa a remoção"
 afirmar_contem "$saida" "RECUSADO: worktree $W: processo com diretório dentro, ou não verificado (código 2)" "a recusa diz que não foi verificado"
 afirmar_igual "$([ -d "$W" ] && echo existe || echo removida)" "existe" "a worktree continua no lugar"
@@ -33,7 +33,7 @@ afirmar_igual "$([ -d "$W" ] && echo existe || echo removida)" "existe" "a workt
 # Sem o processo de outro usuário, só a thread do kernel: a remoção segue.
 rm -rf "$PROC/100"
 rc=0
-saida=$(HIGIENE_PROC="$PROC" bash "$INV" --remover "$lista" 2>&1) || rc=$?
+saida=$(HIGIENE_TESTE_PROC="$PROC" bash "$INV" --remover "$lista" 2>&1) || rc=$?
 afirmar_igual "$rc" "0" "thread do kernel sem cwd não impede a remoção"
 afirmar_contem "$saida" "REMOVIDO: worktree $W" "a worktree sai quando só há thread do kernel"
 exit 0
