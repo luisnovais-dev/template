@@ -2,6 +2,18 @@
 
 Cada versão do processo tem uma entrada. O `adotar-processo`, no modo `atualizar`, lê as notas de migração entre a `processo_versao` do projeto e a versão atual, nesta ordem.
 
+## 4
+
+Orientação opcional de prontidão para sites, com avaliação de aplicabilidade, evidências e verificações além dos 20 elementos originais.
+
+- `docs/PROCESSO.md` inclui uma checklist de itens recomendados e condicionais para projetos com site, com espaço para registrar estado e justificativa.
+- A checklist esclarece que não é garantia de prontidão ou conformidade e acrescenta segurança, desempenho, testes automatizados, monitoramento, falhas de servidor e acessibilidade.
+
+### Notas de migração desde a versão 3
+
+1. Atualize `docs/PROCESSO.md` pelo manifesto (`copy`), preservando os valores específicos do projeto na seção Configuração: `comandos`, `ambientes` e `stack`.
+2. Defina `processo_versao: 4` na Configuração do projeto. A checklist de prontidão para sites é usada quando pertinente e não torna todos os itens obrigatórios.
+
 ## 3
 
 Ambientes reais (DEV, STAGING e PROD), higiene da máquina com lista aprovada e README de uso.
