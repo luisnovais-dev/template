@@ -257,7 +257,7 @@ Ao adaptar a checklist ao projeto, registre o estado de cada item e a evidência
 | 6 | Identidade e infraestrutura | Conjunto de favicons | Recomendado para identificar a marca em abas, favoritos e atalhos. | A preencher | A preencher |
 | 7 | SEO e descoberta | `robots.txt` | Condicional: oriente rastreadores que respeitam o arquivo; ele não protege conteúdo nem substitui autorização. | A preencher | A preencher |
 | 8 | SEO e descoberta | `sitemap.xml` | Recomendado quando há páginas públicas relevantes a descobrir; não garante indexação. | A preencher | A preencher |
-| 9 | SEO e descoberta | Texto alternativo em imagens | Imagens informativas precisam de descrição útil; imagens decorativas podem usar `alt=""`. Considere acessibilidade além de `alt`. | A preencher | A preencher |
+| 9 | SEO e descoberta | Texto alternativo em imagens | Recomendado para imagens informativas, com descrição útil; imagens decorativas devem usar `alt=""`. Considere acessibilidade além de `alt`. | A preencher | A preencher |
 | 10 | Experiência e acessibilidade | Versão mobile ajustada | Recomendada para todas as páginas; conteúdo e controles devem funcionar em telas estreitas. | A preencher | A preencher |
 | 11 | Conversão e marketing | CTA fixo no celular | Condicional: só use se facilitar a ação principal sem cobrir conteúdo ou atrapalhar navegação. | A preencher | A preencher |
 | 12 | Experiência e acessibilidade | Telas de carregamento | Use indicadores quando uma operação assíncrona ou demorada deixar o resultado temporariamente indisponível. | A preencher | A preencher |
@@ -267,7 +267,7 @@ Ao adaptar a checklist ao projeto, registre o estado de cada item e a evidência
 | 16 | Jurídico e transparência | Termos de uso | Condicionais ao serviço e à relação com o usuário; descreva regras que realmente se aplicam. | A preencher | A preencher |
 | 17 | Jurídico e transparência | Banner de cookies | Condicional: avalie as tecnologias usadas e as obrigações aplicáveis; banner de consentimento não é necessário em todos os sites. | A preencher | A preencher |
 | 18 | Conversão e marketing | Analytics instalado | Condicional: adote quando houver uma pergunta de negócio e uma base apropriada para coleta e uso dos dados. | A preencher | A preencher |
-| 19 | Jurídico e transparência | Endereço de contato real | Disponibilize canais verdadeiros e acessíveis; endereço físico depende do negócio e não é necessário em todo serviço digital. | A preencher | A preencher |
+| 19 | Jurídico e transparência | Endereço de contato real | Recomendado: disponibilize canais verdadeiros e acessíveis. Endereço físico depende do negócio e não é necessário em todo serviço digital. | A preencher | A preencher |
 | 20 | Identidade e infraestrutura | Domínio próprio com HTTPS | HTTPS protege a conexão e é recomendado para todo site. Domínio próprio reforça a identidade da organização. | A preencher | A preencher |
 
 ### Verificações além da checklist
