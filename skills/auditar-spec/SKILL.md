@@ -20,7 +20,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 2. Execute as verificações definidas na Configuração de `docs/PROCESSO.md`. Cada comando configurado é executado como está escrito ali. Comando marcado como pendente ou vazio é registrado como NOT TESTED, com o motivo.
 3. Execute os testes de integração e os cenários E2E pertinentes à mudança, quando a Configuração os definir. Se não houver, registre NOT TESTED com a justificativa.
 4. Se o épico tiver suíte de aceite e este ticket for o que o fecha, confirme que o teste de aceitação está ativado e verde na branch integrada.
-5. Se a mudança alterar interface, confirme a evidência do ciclo de validação visual (capturas desktop e mobile, autoavaliação contra o inventário da Spec, correção e E2E do fluxo). Sem essa evidência, o ticket é bloqueado. Depois, execute a skill `validacao-visual` para o aceite humano.
+5. Se a mudança alterar interface, confirme a evidência do ciclo de validação visual (capturas das superfícies de `visual_superficies`, autoavaliação contra o inventário da Spec, correção e E2E do fluxo). Superfície marcada "não aplicável" na Spec, com justificativa, não exige captura. Sem a evidência das superfícies declaradas, o ticket é bloqueado. Depois, execute a skill `validacao-visual` para o aceite humano.
 6. Audite cada Requirement, Acceptance Criterion e Task. Classifique como PASS, PARTIAL, FAIL ou NOT TESTED, com evidência: arquivo, implementação e teste correspondentes. Verifique também os Requisitos de Segurança declarados na Spec, incluindo os marcados como não aplicáveis, cuja justificativa precisa constar.
 7. Confira a documentação:
    - a lista de documentos afetados da Spec foi atualizada;

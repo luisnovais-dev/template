@@ -230,12 +230,12 @@ Imagem ou referência enviada pelo usuário pode ser a fonte de verdade. A Spec 
 
 Ciclo dentro do ticket de interface, sem ticket separado:
 
-1. captura automática das telas alteradas, em desktop e mobile;
+1. captura automática das telas alteradas, em cada superfície listada em `visual_superficies` da Configuração;
 2. autoavaliação por modelo de visão, comparando com o inventário da Spec;
 3. correção dos desvios;
 4. E2E do fluxo alterado.
 
-A evidência (capturas e resultado da autoavaliação) vai para a PR. A auditoria bloqueia o ticket sem ela. Quando não houver ferramenta de captura configurada, a captura é feita manualmente e anexada.
+As superfícies são as larguras que o produto tem, declaradas em `visual_superficies`: `[desktop, mobile]`, `[mobile]` ou `[desktop]`. Uma superfície ausente do produto é marcada "não aplicável" na Spec, com justificativa de uma linha, e a auditoria aceita a marcação. Ticket de interface sem evidência das superfícies declaradas é bloqueado. A evidência (capturas e resultado da autoavaliação) vai para a PR. Quando não houver ferramenta de captura configurada, a captura é feita manualmente e anexada.
 
 ### Roteiro de aceite manual
 
@@ -419,6 +419,7 @@ label_tipo: <!-- label type:* escolhido para a PR, exatamente um -->
 label_aprovacao: status:approved
 label_excecao_tamanho: size:exception
 teto_pr_linhas: 2000
+visual_superficies: <!-- [desktop, mobile], [mobile] ou [desktop], conforme as superfícies do produto -->
 raiz_aposentados: ~/.local/share/onluis-dev/aposentados
 env_check: <!-- comando que confere as chaves do .env sem exibir valores, ou vazio -->
 comandos:

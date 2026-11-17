@@ -38,7 +38,7 @@ Closes #
 - Build:
 - Smoke (se configurado):
 - E2E: não aplicável, ou resultado:
-- Visual (se houver mudança de interface): capturas desktop e mobile anexadas, e resultado da autoavaliação
+- Visual (se houver mudança de interface): capturas das superfícies declaradas em `visual_superficies` anexadas, e resultado da autoavaliação
 
 Diferencie falhas preexistentes (baseline) das introduzidas por esta branch.
 

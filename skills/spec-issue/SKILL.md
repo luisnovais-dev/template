@@ -33,7 +33,7 @@ Produz a Spec que será a fonte de verdade da implementação. Não implementa n
 7. Quando a mudança alterar interface, inclua:
    - mapa de telas afetadas;
    - contrato visual: inventário de elementos da referência, classificados como adotado, adaptado (com motivo), descartado ou divergente entre imagens, e a fidelidade (próxima ou inspiração);
-   - a Task de ciclo visual dentro do próprio ticket (captura desktop e mobile, autoavaliação contra o inventário, correção e E2E do fluxo). Não crie ticket separado de validação visual.
+   - a Task de ciclo visual dentro do próprio ticket (captura nas superfícies de `visual_superficies`, autoavaliação contra o inventário, correção e E2E do fluxo). Superfície do produto ausente da lista é marcada "não aplicável" na Spec, com justificativa de uma linha. Não crie ticket separado de validação visual.
 8. Decomponha em Tasks pequenas e ordenadas. Cada Task tem objetivo, arquivos ou componentes envolvidos, dependências, critérios de conclusão e testes necessários.
 9. Proponha testes automatizados adicionais: unitários, integração, E2E, e validação visual quando houver interface. Use os comandos da Configuração em `docs/PROCESSO.md`. Antes de propor um mecanismo de teste novo, verifique se já existe um no projeto. Mecanismo novo é versionado e genérico, nunca um script por PR.
 10. Termine com a matriz: Requirement → Acceptance Criterion → Task → Teste planejado.

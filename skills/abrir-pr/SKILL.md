@@ -33,7 +33,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 5. Preencha `.github/pull_request_template.md` com o conteúdo real. Seções: Resumo, Spec, Implementação, Tarefas, Critérios de aceite, Verificação, Documentação, Roteiro de aceite manual, Limitações conhecidas e riscos residuais, Tamanho e Evidência.
 6. Em **Documentação**, liste os documentos atualizados. Se a mudança não altera funcionalidade, escreva "não aplicável" e o motivo. Se o que o projeto faz mudou, atualize também a linha do README e a descrição do repositório, e registre.
 7. Em **Roteiro de aceite manual**, use o roteiro produzido pela auditoria: o que foi entregue, onde testar, conta de teste pela referência de identidade, cenários e o que já foi verificado automaticamente.
-8. Em **Verificação**, informe o que foi executado, com resultados. Diferencie falha preexistente de falha introduzida. Se a validação ocorreu em checkout temporário, diga isso. Em mudança de interface, anexe as capturas desktop e mobile e o resultado da autoavaliação.
+8. Em **Verificação**, informe o que foi executado, com resultados. Diferencie falha preexistente de falha introduzida. Se a validação ocorreu em checkout temporário, diga isso. Em mudança de interface, anexe as capturas das superfícies declaradas em `visual_superficies` e o resultado da autoavaliação.
 9. Registre explicitamente "CI não configurada" quando não houver workflow aplicável. Nunca registre como check passado.
 10. Crie a PR com `gh pr create --body-file`, com exatamente um label `type:*`.
 11. Se o projeto exigir o label de aprovação, adicione-o somente com autorização explícita. Ele registra a aprovação da Spec, não da PR.
