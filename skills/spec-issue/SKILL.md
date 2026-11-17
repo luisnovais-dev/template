@@ -83,7 +83,7 @@ A Spec que não aplica um item cita a justificativa. O revisor independente conf
 
 ## Gate de aprovação
 
-Esta skill comenta a Spec na issue. Ela não aplica o label de aprovação (`label_aprovacao`): o label é aplicado na Etapa 1a de `docs/PROCESSO.md`, por invocação de `implementar-spec` com a Spec, ou pela instrução do mantenedor "spec aceita, registrar". Se a Spec depender de uma decisão de produto que a issue não tem, pare e pergunte.
+Esta skill comenta a Spec na issue, antes da aprovação. Ela não aplica o label de aprovação (`label_aprovacao`). Na Etapa 1a de `docs/PROCESSO.md`, o label é aplicado pela `implementar-spec`, por invocação com a Spec, ou pelo agente, pela instrução do mantenedor "spec aceita, registrar". Nenhuma dessas duas formas comenta a Spec de novo. Se a Spec depender de uma decisão de produto que a issue não tem, pare e pergunte.
 
 Decisões que surgirem na implementação são classificadas assim, para a verificação final contar as emendas:
 

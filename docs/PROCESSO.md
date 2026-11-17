@@ -64,8 +64,10 @@ Quando há fronteira entre front e back, a Spec traz o contrato da interface, co
 
 A aprovação é dada pelo mantenedor, em uma destas duas formas, e em nenhuma outra:
 
-- **por invocação:** o mantenedor chama `implementar-spec` com a Spec. A chamada aprova a Spec e autoriza a implementação. A skill comenta a Spec na issue e aplica o label de aprovação (`label_aprovacao`) antes de começar;
-- **por instrução:** o mantenedor diz na conversa algo como "spec aceita, registrar". O agente comenta a Spec na issue e aplica o label, sem implementar. A implementação depende de uma nova invocação de `implementar-spec`.
+- **por invocação:** o mantenedor chama `implementar-spec` com a Spec. A chamada aprova a Spec e autoriza a implementação. A `implementar-spec` aplica o label de aprovação (`label_aprovacao`) antes de começar;
+- **por instrução:** o mantenedor diz na conversa algo como "spec aceita, registrar". O agente aplica o label, sem implementar. A implementação depende de uma nova invocação de `implementar-spec`.
+
+Quem comenta a Spec na issue é a `spec-issue`, antes da aprovação, no gate "Spec pronta". Nas duas formas acima a Spec já está comentada: a aprovação só aplica o label, e nenhuma delas comenta a Spec de novo. Se a Spec não estiver comentada na issue, a `implementar-spec` para e reporta, e a instrução "spec aceita, registrar" não basta para aprovar uma Spec que não foi publicada.
 
 Esse label registra a aprovação da Spec, não da PR.
 
