@@ -1,6 +1,6 @@
 name: CI
 
-# Roda em pull request e em push para a branch base (branch_base em docs/PROCESSO.md).
+# Roda em pull request e em push para main (a branch base deste template).
 on:
   pull_request:
   push:
