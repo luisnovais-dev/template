@@ -39,6 +39,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 10. Registre explicitamente "CI não configurada" quando não houver workflow aplicável ou quando o check falhar por placeholder. Nunca registre como check passado.
 11. Crie a PR com `gh pr create --body-file`, com exatamente um label `type:*`.
 12. Não altere o label de aprovação. Ele já foi aplicado na Etapa 1a e registra a Spec, não a PR.
+13. Esta skill termina na criação da PR. Quando a invocação pediu o encadeamento, siga a seção Fluxo após a PR de `docs/PROCESSO.md`: review em subagente, tratamento de findings, re-review e relatório do merge gate. Sem esse pedido, pare aqui e informe a URL.
 
 ## Saída
 
