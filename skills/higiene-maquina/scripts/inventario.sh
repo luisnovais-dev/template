@@ -703,6 +703,9 @@ for repo in "${UNICOS[@]}"; do
           aviso_store "$caminho"
         else
           echo "  REQUER_DECISAO: worktree $caminho (HEAD solto, alterações pendentes: $sujo, $tamanho)"
+          if tem_submodulo "$caminho"; then
+            echo "    SUBMODULO: a worktree contém submódulo. Use o procedimento de docs/PROCESSO.md (Worktrees e branches), com confirmação."
+          fi
         fi
         continue
       fi
