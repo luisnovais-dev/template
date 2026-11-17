@@ -19,7 +19,7 @@ Fluxo mais curto, captura por superfície do produto e CI do template (issue #12
 
 1. Atualize pelo manifesto (`copy`) os arquivos de `docs/PROCESSO.md`, `.github/` e `scripts/ci.sh`, preservando os valores de `comandos`, `ambientes` e `stack`.
 2. Na Configuração do projeto, acrescente `visual_superficies` com as superfícies do produto e defina `processo_versao: 5`.
-3. Remova a skill `auditar-spec` da máquina com `instalar-processo --atualizar`. Ela não existe mais no template.
+3. Remova à mão o link da skill `auditar-spec`, em `~/.claude/skills/auditar-spec` e em `~/.agents/skills/auditar-spec` (os destinos onde o `instalar-processo` cria links). O `instalar-processo --atualizar` só cria links que faltam e não remove links antigos. Depois da atualização, o link fica quebrado, pois a pasta saiu do template.
 4. Se o projeto ainda não tiver CI, o manifesto cria `.github/workflows/ci.yml`. Preencha o passo de setup da stack nele.
 5. Casos E2E pendentes da suíte de aceite: reescreva-os conforme "Quando um ticket precisa de E2E" em `docs/PROCESSO.md`, atribuídos aos tickets que os entregam.
 6. `size:exception` passa a ser opcional. Nada precisa mudar no repositório.
