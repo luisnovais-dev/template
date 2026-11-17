@@ -32,8 +32,8 @@ body:
   - type: textarea
     id: suite_aceite
     attributes:
-      label: Suíte de aceite
-      description: Qual teste E2E prova a capacidade. Será escrito no primeiro ticket, marcado como pendente, e ativado no ticket que fecha o épico.
+      label: Casos E2E de aceite
+      description: Quais casos E2E provam a capacidade, um por cenário que cruza a costura com o sistema. Cada ticket que muda a costura ativa os seus casos, no próprio ticket que os entrega (ver docs/PROCESSO.md, Quando um ticket precisa de E2E).
     validations:
       required: true
   - type: textarea
@@ -54,7 +54,7 @@ body:
     id: criterios
     attributes:
       label: Critérios de aceite do épico
-      description: Condições que precisam ser verdadeiras para o épico fechar, incluindo a suíte de aceite verde na main integrada.
+      description: Condições que precisam ser verdadeiras para o épico fechar, incluindo os casos E2E do épico ativos e verdes na main integrada.
     validations:
       required: true
   - type: textarea

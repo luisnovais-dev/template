@@ -43,10 +43,10 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 3. **Estrutura.** Crie a estrutura de `docs/` declarada em `docs/PROCESSO.md` (seção Gate de documentação): `docs/dominio.md`, `docs/arquitetura.md` e `docs/ambientes.md` como esqueletos curtos, e `docs/adr/` com um índice.
 4. **README.** Crie o `README.md` com o que o projeto faz, para quem e o status, em uma linha no início.
 5. **ADRs iniciais.** Proponha como ADRs, com status "Proposto", as decisões de stack, estrutura de pastas, autenticação, deploy e ambientes. Cada uma vai para `docs/adr/` como "Aceito" somente depois do aceite do mantenedor, na conversa.
-6. **CI.** Proponha um workflow mínimo que roda os comandos configurados (lint, testes, build). Criá-lo exige aprovação do mantenedor. Se ainda não houver comandos, registre a CI como "não configurada", sem marcar nada como aprovado.
+6. **CI.** O manifesto copia `.github/workflows/ci.yml` e `scripts/ci.sh`. Preencha o passo de setup da stack em `ci.yml` e a seção `comandos` da Configuração. Sem comandos, a CI falha de propósito: registre-a como "não configurada", sem marcar nada como aprovado.
 7. **Harness.** Garanta que o `CLAUDE.md` do projeto importe `AGENTS.md`. Oriente a instalação das skills por máquina com `instalar-processo`.
 8. **Identidade de teste.** Documente em `docs/ambientes.md` os usuários sintéticos por perfil em DEV, a conta de teste do sandbox em STAGING, e o teste que prova a indisponibilidade em produção. Não crie usuário real nem credencial.
-9. **Épico de walking skeleton.** Proponha um épico que entrega a fatia ponta a ponta mínima (uma tela ou rota, uma persistência, o deploy de preview), com a suíte de aceite pendente. Criá-lo exige autorização na invocação. As filhas são escolhidas pelo mantenedor.
+9. **Épico de walking skeleton.** Proponha um épico que entrega a fatia ponta a ponta mínima (uma tela ou rota, uma persistência, o deploy de preview), com os casos E2E de aceite pendentes. Criá-lo exige autorização na invocação. As filhas são escolhidas pelo mantenedor.
 
 ## Modo `existente`: adequação de projeto com código
 
@@ -55,7 +55,7 @@ Leva o processo de trabalho para um projeto. Copia só o que está no manifesto 
 3. **Configuração.** Preencha com os comandos reais. Se um comando não existir, registre `pendente`.
 4. **Acúmulo.** Liste o acúmulo para decisão. A retirada segue o procedimento de `docs/PROCESSO.md` (seção Acúmulo): a cópia vai para `raiz_aposentados`, fora do repositório, e o original só é removido com lista e confirmação. Sem confirmação, nada sai.
 5. **Sem reorganização em massa.** Mudança cosmética, renomeação de pastas e reformatação não entram nesta adoção.
-6. **Trabalho real de adequação** (por exemplo, criar a suíte de aceite, corrigir gate que falha, documentar uma ADR importante) vira **no máximo um épico de adequação**, com filhas escolhidas pelo mantenedor. Nada cosmético vira issue.
+6. **Trabalho real de adequação** (por exemplo, criar os casos E2E de aceite, corrigir gate que falha, documentar uma ADR importante) vira **no máximo um épico de adequação**, com filhas escolhidas pelo mantenedor. Nada cosmético vira issue.
 7. Se a adoção for só mecânica (manifesto, Configuração e labels), faça uma PR única.
 
 ## Modo `atualizar`: projeto já adotado

@@ -22,7 +22,7 @@ Closes #
 
 ## Critérios de aceite
 
-<!-- Resultado da auditoria. Deixe explícito o que estiver parcial. -->
+<!-- Resultado da verificação final de implementar-spec. Deixe explícito o que estiver parcial. -->
 
 - [ ] Critério 1
 
@@ -37,7 +37,7 @@ Closes #
 - Typecheck:
 - Build:
 - Smoke (se configurado):
-- E2E: não aplicável, ou resultado:
+- E2E: não aplicável (ticket fora da costura com o sistema), ou casos ativados e resultado:
 - Visual (se houver mudança de interface): capturas das superfícies declaradas em `visual_superficies` anexadas, e resultado da autoavaliação
 
 Diferencie falhas preexistentes (baseline) das introduzidas por esta branch.
@@ -66,7 +66,7 @@ Diferencie falhas preexistentes (baseline) das introduzidas por esta branch.
 
 ## Tamanho
 
-<!-- Linhas alteradas, excluindo arquivos gerados. Se acima do teto, justifique e use o label size:exception. -->
+<!-- Linhas alteradas, excluindo arquivos gerados. Acima de teto_pr_linhas, o aviso e a justificativa vão aqui. O teto é orientação, não bloqueio. O label size:exception é opcional. -->
 
 ## Evidência
 

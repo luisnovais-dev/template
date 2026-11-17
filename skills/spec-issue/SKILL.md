@@ -35,7 +35,7 @@ Produz a Spec que será a fonte de verdade da implementação. Não implementa n
    - contrato visual: inventário de elementos da referência, classificados como adotado, adaptado (com motivo), descartado ou divergente entre imagens, e a fidelidade (próxima ou inspiração);
    - a Task de ciclo visual dentro do próprio ticket (captura nas superfícies de `visual_superficies`, autoavaliação contra o inventário, correção e E2E do fluxo). Superfície do produto ausente da lista é marcada "não aplicável" na Spec, com justificativa de uma linha. Não crie ticket separado de validação visual.
 8. Decomponha em Tasks pequenas e ordenadas. Cada Task tem objetivo, arquivos ou componentes envolvidos, dependências, critérios de conclusão e testes necessários.
-9. Proponha testes automatizados adicionais: unitários, integração, E2E, e validação visual quando houver interface. Use os comandos da Configuração em `docs/PROCESSO.md`. Antes de propor um mecanismo de teste novo, verifique se já existe um no projeto. Mecanismo novo é versionado e genérico, nunca um script por PR.
+9. Proponha testes automatizados adicionais nos níveis de `docs/PROCESSO.md` (seção Níveis de teste): unitários, integração, e validação visual quando houver interface. E2E só entra quando o ticket muda a costura com o sistema (seção Quando um ticket precisa de E2E): declare de 1 a 3 casos na Spec, cada um ativo no próprio ticket. Se o ambiente de teste não estiver disponível, registre a pendência na Spec antes da implementação. Use os comandos da Configuração em `docs/PROCESSO.md`. Antes de propor um mecanismo de teste novo, verifique se já existe um no projeto. Mecanismo novo é versionado e genérico, nunca um script por PR.
 10. Termine com a matriz: Requirement → Acceptance Criterion → Task → Teste planejado.
 11. Liste as decisões que precisam de aprovação do mantenedor.
 
@@ -83,9 +83,9 @@ A Spec que não aplica um item cita a justificativa. O revisor independente conf
 
 ## Gate de aprovação
 
-A Spec não é comentada na issue nem recebe o label de aprovação (`label_aprovacao`) nesta skill. Esses passos acontecem só depois da aprovação explícita do mantenedor, na conversa. Se a Spec depender de uma decisão de produto que a issue não tem, pare e pergunte.
+Esta skill comenta a Spec na issue. Ela não aplica o label de aprovação (`label_aprovacao`): o label é aplicado na Etapa 1a de `docs/PROCESSO.md`, por invocação de `implementar-spec` com a Spec, ou pela instrução do mantenedor "spec aceita, registrar". Se a Spec depender de uma decisão de produto que a issue não tem, pare e pergunte.
 
-Decisões que surgirem na implementação são classificadas assim, para a auditoria contar as emendas:
+Decisões que surgirem na implementação são classificadas assim, para a verificação final contar as emendas:
 
 - **produto:** emenda da Spec na issue, com aceite do mantenedor;
 - **técnica local:** registrada na PR;

@@ -1,6 +1,6 @@
 ---
 name: merge-gate
-description: Verifica a prontidão final de uma PR contra o último review válido, checks, conflitos, documentação e suíte de aceite do épico; se estiver pronta, faz o squash merge com mensagem orientada à entrega e limpa a branch e a worktree. Use como etapa final, depois do re-review.
+description: Verifica a prontidão final de uma PR contra o último review válido, checks, conflitos, documentação e casos E2E do épico; se estiver pronta, faz o squash merge com mensagem orientada à entrega e limpa a branch e a worktree. Use como etapa final, depois do re-review.
 ---
 
 # Merge gate
@@ -12,7 +12,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 ## Entrada
 
 - Número da PR e da issue.
-- Autorização explícita para squash na invocação. Quando o gate estiver verde, a própria invocação desta etapa é a autorização do squash.
+- A invocação do fluxo autoriza o relatório do gate. O squash exige a confirmação do mantenedor sobre o relatório.
 
 ## Procedimento
 
@@ -21,7 +21,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 3. Confirme que a issue e a Spec correspondem à implementação entregue.
 4. Confirme que todos os findings bloqueantes anteriores estão resolvidos e verificados pelo revisor no re-review.
 5. Confirme a documentação: a seção "Documentação" da PR está preenchida, e os documentos citados foram de fato atualizados.
-6. Verifique se a PR é o último ticket filho aberto do épico ao qual pertence ("Parte de #<épico>" na issue). Se for, aplique a seção **Fechamento do épico** de `docs/PROCESSO.md`: a suíte de aceite do épico precisa estar ativada e verde na branch integrada, a checklist do épico não pode ter item pendente, e o flag de feature precisa estar tratado. Sem isso, o épico não fecha. Informe "fecha o épico" no resultado. O fechamento em si só ocorre com instrução explícita na invocação.
+6. Verifique se a PR é o último ticket filho aberto do épico ao qual pertence ("Parte de #<épico>" na issue). Se for, aplique a seção **Fechamento do épico** de `docs/PROCESSO.md`: os casos E2E do épico precisam estar ativos e verdes na branch integrada, a checklist do épico não pode ter item pendente, e o flag de feature precisa estar tratado. Sem isso, o épico não fecha. Informe "fecha o épico" no resultado. O fechamento em si só ocorre com instrução explícita na invocação.
 7. Verifique o estado dos checks. Se a API não permitir consultar as regras de proteção de `main`, registre "Required checks: NOT VERIFIED — insufficient repository/API permission". Não infira quais checks são obrigatórios.
 8. Se a plataforma reportar `REVIEW_REQUIRED`, trate como bloqueio da plataforma e siga o procedimento de `docs/PROCESSO.md` (seção Bloqueios da plataforma). Não contorne sem autorização.
 9. Verifique conflitos com `main`.
@@ -44,7 +44,7 @@ Reviews: <estado, por fonte>
 Known checks: <lista>
 Required checks: PASS | FAIL | NOT VERIFIED
 Documentation: <estado>
-Epic acceptance suite: <não aplicável | verde | pendente>
+Epic E2E cases: <não aplicável | verdes | pendentes>
 Manual acceptance: <estado>
 Blocking findings: <lista ou nenhum>
 Accepted risks / non-blocking follow-ups: <lista>
@@ -52,16 +52,18 @@ Unexpected changes since review: <lista ou nenhuma>
 FINAL STATUS: READY FOR SQUASH MERGE | NOT READY FOR MERGE
 ```
 
-`NOT READY FOR MERGE` só com blocker concreto: check obrigatório falhando ou pendente, conflito, alteração após o SHA revisado, finding bloqueante, documentação ausente, suíte de aceite do épico não verde, solicitação formal de changes ou `REVIEW_REQUIRED` sem o mecanismo da plataforma. `NOT VERIFIED` não é FAIL.
+`NOT READY FOR MERGE` só com blocker concreto: check obrigatório falhando ou pendente, conflito, alteração após o SHA revisado, finding bloqueante, documentação ausente, casos E2E do épico não verdes, solicitação formal de changes ou `REVIEW_REQUIRED` sem o mecanismo da plataforma. `NOT VERIFIED` não é FAIL.
 
 ## Squash e limpeza
 
-Se `READY FOR SQUASH MERGE`:
+Se `READY FOR SQUASH MERGE`, apresente o relatório ao mantenedor, com o roteiro de aceite manual, e aguarde a confirmação do squash. Sem ela, pare.
+
+Com a confirmação:
 
 1. Faça o squash com `gh pr merge <PR> --squash --delete-branch`, usando mensagem orientada à entrega da issue (não a um commit individual), com `Closes #<issue>`.
 2. Confirme que a PR consta como merged, o commit resultante em `main` e o encerramento da issue.
 3. Atualize o `main` local com fast-forward, sem alterar nada além disso. Preserve alterações locais não rastreadas.
-4. Remova a worktree da issue somente se estiver limpa e sem trabalho não publicado. Use `git worktree remove`, nunca `rm -rf`.
+4. Remova a worktree da issue somente se estiver limpa e sem trabalho não publicado. Use `git worktree remove`, nunca `rm -rf`. Se a worktree contém submódulo, o `git worktree remove` a recusa. Nesse caso, siga o procedimento de submódulo de `docs/PROCESSO.md` (seção Worktrees e branches), com a confirmação do mantenedor antes de qualquer passo.
 5. Reporte: PR, issue, commit resultante, estado da issue, branch removida ou preservada, worktree removida ou preservada e pendências de limpeza.
 
 ## Não faça
@@ -69,4 +71,5 @@ Se `READY FOR SQUASH MERGE`:
 - Não faça nenhuma alteração adicional em `main` depois do merge.
 - Não faça bypass de proteção de branch sem autorização explícita da invocação e somente se a plataforma oferecer o mecanismo.
 - Não converta COMMENTED em bloqueio automaticamente.
-- Não feche épico sem a suíte de aceite verde.
+- Não feche épico sem os casos E2E verdes.
+- Não faça squash sem a confirmação do mantenedor sobre o relatório.

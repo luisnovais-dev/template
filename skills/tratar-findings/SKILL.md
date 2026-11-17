@@ -12,7 +12,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 ## Entrada
 
 - Número da PR, com os findings publicados.
-- Autorização explícita para corrigir na invocação.
+- Autorização para corrigir: a invocação que autorizou a PR, ou a instrução do mantenedor para tratar os findings. Quando encadeado pelo fluxo de `docs/PROCESSO.md` (seção Fluxo após a PR), roda em subagente, sem nova invocação, e termina com o re-review.
 
 ## Como ler o review
 
