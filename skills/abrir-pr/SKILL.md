@@ -30,6 +30,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 4. Escolha o vínculo com a issue:
    - última fatia, ou PR única: `Closes #<número>`;
    - fatia intermediária: `Refs #<número>`.
+   - Issues relacionadas que a PR resolve também recebem `Closes`, uma por linha (`Closes #10`, `Closes #11`). Liste todas no corpo, para que o merge as feche. Confirme antes que cada uma está coberta pela PR.
 5. Preencha `.github/pull_request_template.md` com o conteúdo real. Seções: Resumo, Spec, Implementação, Tarefas, Critérios de aceite, Verificação, Documentação, Roteiro de aceite manual, Limitações conhecidas e riscos residuais, Tamanho e Evidência.
 6. Em **Documentação**, liste os documentos atualizados. Se a mudança não altera comportamento observável, escreva "não aplicável" e o motivo. Se o que o projeto faz mudou, atualize também a linha do README e a descrição do repositório, e registre.
 7. Em **Roteiro de aceite manual**, use o roteiro produzido pela verificação final: o que foi entregue, onde testar, conta de teste pela referência de identidade, cenários e o que já foi verificado automaticamente.
