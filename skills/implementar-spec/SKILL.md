@@ -11,13 +11,13 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 
 ## Entrada
 
-- Número da issue, com a Spec comentada na issue.
-- Invocação com a Spec: aprova a Spec e autoriza a implementação. O label de aprovação (`label_aprovacao`) é aplicado por esta skill, como descrito em `docs/PROCESSO.md`, Etapa 1a.
+- Número da issue, com a Spec no corpo da issue.
+- Invocação com a issue: aprova a Spec e autoriza a implementação. Troca o label `status:draft` por `status:approved` (`label_aprovacao`) e completa o corpo da issue com os dados da Spec que faltarem, como descrito em `docs/PROCESSO.md`, Etapa 1a.
 - Se a invocação pedir a PR (por exemplo, "implemente e abra a PR"), autoriza também a abertura da PR e o encadeamento da etapa 3 em diante. O squash continua exigindo confirmação do mantenedor.
 
 ## Pré-condições
 
-1. A Spec está comentada na issue e não tem dependência de decisão de produto que a issue não cobre. Se tiver, pare e pergunte.
+1. A issue contém a Spec no corpo e está com `status:draft` (ou já com `status:approved`, em reinvocação). Não há dependência de decisão de produto que a issue não cobre. Se houver, pare e pergunte.
 2. Você está numa worktree dedicada da issue, a partir do main remoto atualizado. Nunca no checkout principal. Antes de criar branch ou worktree, procure a que já existe para a issue (ver Procedimento, passo 0).
 3. `git status` está limpo. Se houver alterações prévias, classifique cada caminho antes de qualquer ação. Não descarte nada sem determinar a origem.
 4. A Configuração de `docs/PROCESSO.md` está preenchida nos valores que a Spec usa, incluindo `visual_superficies` quando houver interface. Se houver placeholder, pare e peça o valor.
@@ -32,7 +32,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 1. Atualize referências: `git fetch origin --prune`. Confirme a relação da branch com o main remoto.
    - Ao criar a branch, use `git worktree add -b <branch> <caminho> origin/main --no-track`, para que ela não rastreie a `main`.
    - Publique só a própria branch, com `git push -u origin <branch>`. Nunca faça push para `main`.
-2. Aplique o label de aprovação (`label_aprovacao`) na issue, se ainda não estiver aplicado. Ele registra a aprovação da Spec por esta invocação.
+2. Aprove a Spec na issue: troque `status:draft` por `label_aprovacao` (`status:approved`), se ainda não estiver aplicado. Depois complete o corpo da issue com os dados da Spec que faltarem (Tasks, Requisitos de Segurança, matriz, critérios e E2E). Esta invocação é a aprovação.
 3. Crie o registro de progresso em `.agent/progresso.md` (não versionado). Ele é atualizado a cada Task.
 4. Se o ticket pertence a um épico, escreva os casos E2E que o ticket ativa, conforme `docs/PROCESSO.md` (seção Quando um ticket precisa de E2E). E2E só entra quando o ticket muda a costura com o sistema. Caso fora da costura não vira E2E.
 5. Antes de criar um mecanismo de teste ou verificação, procure o que já existe no projeto. Mecanismo novo é versionado, declarado na Configuração, documentado e genérico. Nunca crie script ou configuração por PR ou issue.
@@ -66,7 +66,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 
 ### Encadeamento até a PR
 
-16. Só se a invocação autorizou a PR e não há FAIL: execute `abrir-pr`. Depois, siga o fluxo de `docs/PROCESSO.md` (seção Fluxo após a PR): `review-pr` em subagente de contexto novo, `tratar-findings` em subagente quando houver findings, re-review, e `merge-gate` para o relatório.
+16. Só se a invocação autorizou a PR e não há FAIL: execute `abrir-pr`. A própria `abrir-pr` encadeia o review em subagente de contexto novo, e o fluxo segue conforme `docs/PROCESSO.md` (seção Fluxo após a PR): `tratar-findings` quando houver findings, re-review e `merge-gate` para o relatório.
 17. Pare no relatório do merge gate e apresente-o ao mantenedor, com o roteiro de aceite manual. Não faça squash sem a confirmação dele.
 
 ## Saída

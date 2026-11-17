@@ -32,7 +32,7 @@ Converte um relato em uma issue acionável. Não altera código nem cria branch.
    - ticket de funcionalidade: `feature.yml`; ticket de melhoria: `melhoria.yml`;
    - épico: `epic.yml`.
    Os textos ficam em pt-BR. Os critérios de aceite são verificáveis. Não invente critérios que o relato não sustenta; marque-os como pergunta em aberto.
-8. Escolha exatamente um label `type:*` correspondente ao formulário. Use labels do manifesto `.github/labels.yml`.
+8. Escolha exatamente um label `type:*` correspondente ao formulário, e aplique também `status:draft`, que marca a issue como em elaboração até a aprovação da Spec. Use labels do manifesto `.github/labels.yml`. A issue não é Spec: os campos do relato ficam no corpo, e a Spec é escrita depois pela `spec-issue`.
 9. Se o tipo for épico:
    - crie o épico com o label `type:epic`, com a checklist de itens;
    - crie cada item como issue filha, com a linha `Parte de: #<épico>` no corpo;
@@ -40,11 +40,11 @@ Converte um relato em uma issue acionável. Não altera código nem cria branch.
    - itens mencionados que não pertencem ao tema ficam como issues separadas, citadas em "Fora do épico".
    Um relato com uma única entrega não vira épico. Criar o label `type:epic` pela primeira vez exige autorização explícita na invocação.
 10. Mostre o texto final ao mantenedor e aguarde a instrução de publicação, se ela não estiver na invocação.
-11. Publique com `gh issue create` usando arquivo de corpo, não string inline.
+11. Publique com `gh issue create` usando arquivo de corpo, não string inline, com os labels `type:*` e `status:draft`.
 
 ## Saída
 
-- URL da issue publicada (ou das issues, no caso de épico).
+- URL da issue publicada (ou das issues, no caso de épico), com o label `status:draft`.
 - Lista de duplicatas consideradas.
 - Perguntas em aberto que ficaram na issue.
 
@@ -54,3 +54,4 @@ Converte um relato em uma issue acionável. Não altera código nem cria branch.
 - Não inclua segredos, dados pessoais reais ou dumps de banco no texto.
 - Não transforme hipótese em fato.
 - Não crie issue para ajuste cosmético.
+- Não escreva Spec nem critérios de implementação na issue. Isso é da `spec-issue`.
