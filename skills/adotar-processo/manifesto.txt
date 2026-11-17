@@ -20,4 +20,6 @@ docs/PROCESSO.md                       copy
 .github/ISSUE_TEMPLATE/epic.yml        copy
 .github/ISSUE_TEMPLATE/bug.yml         copy
 .github/ISSUE_TEMPLATE/quality-baseline.yml copy
+.github/workflows/ci.yml                copy
+scripts/ci.sh                          copy
 .gitignore                             merge

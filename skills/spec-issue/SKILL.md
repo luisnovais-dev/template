@@ -5,11 +5,11 @@ description: Analisa uma issue e o código relacionado e produz a Spec de implem
 
 # Especificação de issue
 
-Produz a Spec que será a fonte de verdade da implementação. Não implementa nada.
+Produz a Spec que será a fonte de verdade da implementação, e a escreve no corpo da issue. Não implementa nada. A issue é a Spec: a Spec não é comentário.
 
 ## Entrada
 
-- URL ou número da issue.
+- URL ou número da issue, com `status:draft`.
 - Documentos de contexto citados pela issue, e referências visuais enviadas pelo usuário, se houver.
 
 ## Procedimento
@@ -33,15 +33,16 @@ Produz a Spec que será a fonte de verdade da implementação. Não implementa n
 7. Quando a mudança alterar interface, inclua:
    - mapa de telas afetadas;
    - contrato visual: inventário de elementos da referência, classificados como adotado, adaptado (com motivo), descartado ou divergente entre imagens, e a fidelidade (próxima ou inspiração);
-   - a Task de ciclo visual dentro do próprio ticket (captura desktop e mobile, autoavaliação contra o inventário, correção e E2E do fluxo). Não crie ticket separado de validação visual.
+   - a Task de ciclo visual dentro do próprio ticket (captura nas superfícies de `visual_superficies`, autoavaliação contra o inventário, correção e E2E do fluxo). Superfície do produto ausente da lista é marcada "não aplicável" na Spec, com justificativa de uma linha. Não crie ticket separado de validação visual.
 8. Decomponha em Tasks pequenas e ordenadas. Cada Task tem objetivo, arquivos ou componentes envolvidos, dependências, critérios de conclusão e testes necessários.
-9. Proponha testes automatizados adicionais: unitários, integração, E2E, e validação visual quando houver interface. Use os comandos da Configuração em `docs/PROCESSO.md`. Antes de propor um mecanismo de teste novo, verifique se já existe um no projeto. Mecanismo novo é versionado e genérico, nunca um script por PR.
+9. Proponha testes automatizados adicionais nos níveis de `docs/PROCESSO.md` (seção Níveis de teste): unitários, integração, e validação visual quando houver interface. E2E só entra quando o ticket muda a costura com o sistema (seção Quando um ticket precisa de E2E): declare de 1 a 3 casos na Spec, cada um ativo no próprio ticket. Se o ambiente de teste não estiver disponível, registre a pendência na Spec antes da implementação. Use os comandos da Configuração em `docs/PROCESSO.md`. Antes de propor um mecanismo de teste novo, verifique se já existe um no projeto. Mecanismo novo é versionado e genérico, nunca um script por PR.
 10. Termine com a matriz: Requirement → Acceptance Criterion → Task → Teste planejado.
 11. Liste as decisões que precisam de aprovação do mantenedor.
+12. Reescreva o corpo da issue com a Spec, com `gh issue edit <n> --body-file`, conforme a seção Saída. Mantenha os campos do relato (contexto, capacidade, requisitos, critérios de aceite, relações, áreas e risco) e acrescente a Spec completa, com os dados que faltarem. Não comente a Spec, e não aplique label de aprovação: a issue segue com `status:draft`.
 
 ## Gate: Spec pronta
 
-Antes de apresentar a Spec para aprovação, verifique cada item. Se algum falhar, a Spec não é aprovável, e o texto diz qual falta:
+Antes de apresentar a Spec para aprovação, verifique cada item. Se algum falhar, a Spec não é aprovável, e o corpo da issue diz qual falta, em uma seção "Pendências bloqueantes":
 
 - as investigações estão feitas e nenhuma Task é de tipo "verificar" ou "obter aceite";
 - o mapa de telas, o contrato visual e o contrato de API, quando houver, estão aceitos com a Spec;
@@ -83,9 +84,9 @@ A Spec que não aplica um item cita a justificativa. O revisor independente conf
 
 ## Gate de aprovação
 
-A Spec não é comentada na issue nem recebe o label de aprovação (`label_aprovacao`) nesta skill. Esses passos acontecem só depois da aprovação explícita do mantenedor, na conversa. Se a Spec depender de uma decisão de produto que a issue não tem, pare e pergunte.
+Esta skill reescreve o corpo da issue com a Spec. Ela não comenta a Spec e não aplica o label de aprovação (`label_aprovacao`): a issue segue com `status:draft`. Na Etapa 1a de `docs/PROCESSO.md`, a aprovação é feita pela `implementar-spec`, por invocação com a issue, ou pelo agente, pela instrução do mantenedor "spec aceita, registrar". Ela troca `status:draft` por `status:approved` e completa o corpo com os dados da Spec que faltarem. Se a Spec depender de uma decisão de produto que a issue não tem, pare e pergunte.
 
-Decisões que surgirem na implementação são classificadas assim, para a auditoria contar as emendas:
+Decisões que surgirem na implementação são classificadas assim, para a verificação final contar as emendas:
 
 - **produto:** emenda da Spec na issue, com aceite do mantenedor;
 - **técnica local:** registrada na PR;
@@ -93,7 +94,7 @@ Decisões que surgirem na implementação são classificadas assim, para a audit
 
 ## Saída
 
-- Spec, Tasks, Requisitos de Segurança e matriz, como texto para revisão do mantenedor.
+- Corpo da issue reescrito com a Spec, Tasks, Requisitos de Segurança e matriz, para revisão do mantenedor. Ao final, o link da issue.
 - Resultado do gate "Spec pronta", item por item.
 - Classificação de risco, documentos afetados e proposta de ADR, se houver.
 - Lista de decisões que precisam de aprovação.
@@ -105,3 +106,4 @@ Decisões que surgirem na implementação são classificadas assim, para a audit
 - Não invente requisitos que a issue não sustenta.
 - Não declare um Requisito de Segurança como atendido sem o teste ou a verificação que o comprova.
 - Não aprove a própria Spec.
+- Não comente a Spec na issue, nem troque o label de status.

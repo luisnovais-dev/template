@@ -4,7 +4,10 @@
 # Uso:
 #   instalar.sh                 mostra o plano (somente leitura, não altera nada)
 #   instalar.sh --aplicar       aplica o plano (cria clone, se preciso, e os links)
-#   instalar.sh --atualizar     atualiza o clone (fast-forward) e aplica o plano
+#   instalar.sh --atualizar     atualiza o clone (fast-forward), cria os links que faltam e
+#                               lista os links órfãos: apontam para o clone e para uma pasta
+#                               que não é mais skill do processo
+#   instalar.sh --atualizar --aplicar   o mesmo, e remove os links órfãos listados
 #
 # Variáveis (para testes e outras máquinas):
 #   ONLUIS_TEMPLATE_DIR   clone do instalador (padrão: $HOME/.local/share/onluis-dev/template)
@@ -14,19 +17,28 @@
 # Destinos: $HOME/.agents/skills (Codex, OpenCode, Hermes) e $HOME/.claude/skills (Claude).
 # Nunca sobrescreve uma skill existente que não seja link deste clone. Nunca copia, move ou
 # apaga skills de fora do processo: elas são só contadas, e a desinstalação é manual.
+# Remove só links órfãos do próprio clone, e só com --atualizar --aplicar. O destino do link
+# nunca é apagado.
 # Não altera ~/.hermes/config.yaml: só mostra o trecho a incluir.
 # Não imprime valores de segredo: só caminhos e contagens.
 
 set -u
 
-MODO="plano"
+APLICAR=0
+ATUALIZAR=0
 for arg in "$@"; do
   case "$arg" in
-    --aplicar) MODO="aplicar" ;;
-    --atualizar) MODO="atualizar" ;;
-    *) echo "Uso: $0 [--aplicar|--atualizar]"; exit 64 ;;
+    --aplicar) APLICAR=1 ;;
+    --atualizar) ATUALIZAR=1 ;;
+    *) echo "Uso: $0 [--aplicar] [--atualizar]"; exit 64 ;;
   esac
 done
+MODO="plano"
+if [ "$ATUALIZAR" -eq 1 ]; then
+  MODO="atualizar"
+elif [ "$APLICAR" -eq 1 ]; then
+  MODO="aplicar"
+fi
 
 CLONE="${ONLUIS_TEMPLATE_DIR:-$HOME/.local/share/onluis-dev/template}"
 REPO="${ONLUIS_TEMPLATE_REPO:-https://github.com/onluis-dev/template.git}"
@@ -140,6 +152,32 @@ for destino in "$DEST_AGENTS" "$DEST_CLAUDE"; do
     fi
   done
 done
+
+# 3b. Links órfãos (só com --atualizar): link nos destinos que aponta para uma pasta do clone
+# que não é mais skill do processo. Listados sempre; removidos só com --aplicar. Link de fora
+# do clone e pasta comum não são tocados.
+if [ "$ATUALIZAR" -eq 1 ] && [ -n "$FONTE" ] && [ -n "$SKILLS" ]; then
+  FONTE_REAL=$(readlink -f "$FONTE")
+  for destino in "$DEST_AGENTS" "$DEST_CLAUDE"; do
+    [ -d "$destino" ] || continue
+    for alvo in "$destino"/*; do
+      [ -L "$alvo" ] || continue
+      alvo_real=$(readlink -f "$alvo")
+      [ "$(dirname "$alvo_real")" = "$FONTE_REAL" ] || continue
+      nome=$(basename "$alvo_real")
+      case " $SKILLS " in *" $nome "*) continue ;; esac
+      if [ "$APLICAR" -eq 1 ]; then
+        if rm -- "$alvo"; then
+          echo "Removido: link órfão $alvo (apontava para $alvo_real)"
+        else
+          echo "ERRO: não foi possível remover o link órfão $alvo"
+        fi
+      else
+        echo "Órfão: $alvo aponta para $alvo_real, que não é mais skill do processo. Será removido com --atualizar --aplicar."
+      fi
+    done
+  done
+fi
 
 # 4. Hermes: só mostra o trecho a incluir.
 if [ -f "$HERMES_CFG" ]; then

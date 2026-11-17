@@ -1,0 +1,19 @@
+name: CI
+
+# Roda em pull request e em push para main (a branch base deste template).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verificacao:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Projeto: preencha aqui o setup da stack (versão da linguagem e instalação das dependências).
+      # Enquanto este passo não existir, os comandos da Configuração podem falhar por falta de ambiente.
+
+      - name: Verificação configurada em docs/PROCESSO.md
+        run: sh scripts/ci.sh

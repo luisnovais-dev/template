@@ -2,6 +2,29 @@
 
 Cada versão do processo tem uma entrada. O `adotar-processo`, no modo `atualizar`, lê as notas de migração entre a `processo_versao` do projeto e a versão atual, nesta ordem.
 
+## 5
+
+Fluxo mais curto, captura por superfície do produto e CI do template (issue #12).
+
+- Captura visual segue `visual_superficies` na Configuração: `[desktop, mobile]`, `[mobile]` ou `[desktop]`. Superfície ausente do produto vira "não aplicável" na Spec, com justificativa de uma linha.
+- A issue é a Spec. A Spec fica no corpo da issue, escrito pela `spec-issue`, e não em comentário.
+- Label `status:draft` para a issue em elaboração, aplicado pelo `relato-para-issue`. Na aprovação, `implementar-spec` (ou a instrução "spec aceita, registrar") troca `status:draft` por `status:approved` e completa o corpo da issue com os dados da Spec. Em nenhuma outra situação.
+- Etapa de auditoria removida. `auditar-spec` sai do fluxo. Sua verificação passa a ser a verificação final de `implementar-spec`.
+- Fluxo após a PR encadeado: `abrir-pr` chama o review em subagente de contexto novo. Se houver finding, `tratar-findings` corrige e chama o re-review, também em subagente, até o relatório do merge gate. O squash continua exigindo confirmação do mantenedor.
+- Casos E2E só para tickets que mudam a costura com o sistema, com 1 a 3 casos ativos no próprio ticket. A suíte de aceite não é mais ativada no fechamento do épico (issue #11).
+- Gate de documentação só exige atualização quando a mudança altera comportamento observável. O teto de linhas por PR é orientação: avisa, não bloqueia.
+- CI do template: `.github/workflows/ci.yml` e `scripts/ci.sh`, que executam os comandos configurados, sem `e2e`.
+- Remoção de worktree com submódulo: procedimento documentado, com confirmação. `higiene-maquina` recusa essas worktrees e indica o procedimento (issue #10).
+
+### Notas de migração desde a versão 4
+
+1. Atualize pelo manifesto (`copy`) os arquivos de `docs/PROCESSO.md`, `.github/` e `scripts/ci.sh`, preservando os valores de `comandos`, `ambientes` e `stack`.
+2. Na Configuração do projeto, acrescente `visual_superficies` com as superfícies do produto e defina `processo_versao: 5`.
+3. Atualize as skills da máquina com `skills/instalar-processo/scripts/instalar.sh --atualizar`, que mostra o plano. Os links órfãos, como o de `auditar-spec` em `~/.claude/skills` e `~/.agents/skills`, aparecem nele. Com `--atualizar --aplicar`, são removidos. Só links que apontam para o clone do template e para skill que não existe mais são removidos.
+4. Se o projeto ainda não tiver CI, o manifesto cria `.github/workflows/ci.yml`. Preencha o passo de setup da stack nele.
+5. Casos E2E pendentes da suíte de aceite: reescreva-os conforme "Quando um ticket precisa de E2E" em `docs/PROCESSO.md`, atribuídos aos tickets que os entregam.
+6. `size:exception` passa a ser opcional. Nada precisa mudar no repositório.
+
 ## 4
 
 Orientação opcional de prontidão para sites, com avaliação de aplicabilidade, evidências e verificações além dos 20 elementos originais.

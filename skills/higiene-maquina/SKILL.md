@@ -33,7 +33,7 @@ Mostra o estado do que o trabalho com agentes deixou nesta máquina e remove som
 
 - **SEGURO_REMOVER:** worktree limpa e integrada (ancestral de `origin/main`, ou PR mesclada por squash com a ponta conferida), e branch integrada sem worktree. "Limpa" inclui arquivos ignorados pelo `.gitignore` (um `.env` local conta como pendência); ficam de fora da conta só as pastas regeneráveis (`node_modules`, `.next`, `dist`, `coverage` e `.venv` por padrão, ou a lista de `HIGIENE_REGENERAVEIS`) e `.agent/`. Um `.env` ou outro arquivo ignorado fora dessa lista bloqueia a remoção; para aceitar outra pasta, inclua-a em `HIGIENE_REGENERAVEIS`. Entra na lista aprovada.
 - **RESGATAR:** branch com commits fora do remoto vivo e sem PR mesclada. Inclui o caso em que o GitHub não pôde ser consultado. **Nunca** é segura. Confirme com o mantenedor antes de qualquer ação.
-- **REQUER_DECISAO:** worktree suja, HEAD solto com alterações, branch não integrada, branch integrada que está no checkout principal, ou branch sem PR mesclada cujo commit já existe no GitHub. Para worktree, o inventário lista os pendentes (até 20, com o total).
+- **REQUER_DECISAO:** worktree suja, worktree com submódulo, HEAD solto com alterações, branch não integrada, branch integrada que está no checkout principal, ou branch sem PR mesclada cujo commit já existe no GitHub. Para worktree, o inventário lista os pendentes (até 20, com o total).
 - **RASCUNHO:** pendente de Spec ou documento não versionado (`*.md`, `docs/`, `openspec/`, `specs/`). Mostra `main=` (AUSENTE, IGUAL ou DIFERENTE em relação a `origin/main`) e `issue=` (IGUAL, DIFERENTE, AUSENTE, INDETERMINADO ou SEM_ISSUE, pela branch e pela issue no GitHub). O conteúdo nunca é impresso.
 - **ORFAO:** worktree registrada cujo diretório sumiu. Limpe o registro com `git worktree prune` só após confirmação.
 - **DOCKER_ORFAO:** containers, volumes e redes de uma execução de teste cujo PID já não existe. São agrupados pela chave de execução `<pid>-<8 hex>` do nome ou do projeto do compose, e não pelo nome exato. Entram na lista aprovada.
@@ -48,7 +48,7 @@ Mostra o estado do que o trabalho com agentes deixou nesta máquina e remove som
 
 ## Regras de remoção (modo `--remover`)
 
-- Worktree: `git worktree remove` sem `--force`. Recusada se houver alteração pendente, processo com o diretório dentro, ou trabalho não integrado. A pasta-mãe é removida só se ficar vazia.
+- Worktree: `git worktree remove` sem `--force`. Recusada se houver alteração pendente, processo com o diretório dentro, ou trabalho não integrado. A pasta-mãe é removida só se ficar vazia. Worktree com submódulo é recusada: o git não a remove, e o inventário a classifica como REQUER_DECISAO com a indicação `SUBMODULO`. A remoção dela segue o procedimento de `docs/PROCESSO.md` (seção Worktrees e branches), com confirmação do mantenedor antes de qualquer passo.
 - Branch: `-d` se for ancestral de `origin/main`. `-D` só pela regra de squash (PR mesclada, ponta igual ou atrás do `headRefOid`, sem PR aberta e commit no GitHub). Recusada se estiver em uso em worktree ou no checkout principal.
 - Lixo: só dentro do repositório, só se não estiver versionado.
 - Docker: só se o PID morreu. Remove containers (`stop`, `rm`), volumes e redes da chave.

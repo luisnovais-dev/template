@@ -382,6 +382,11 @@ recusar() {
   echo "RECUSADO: $1 $2: $3"
 }
 
+# 0 se a worktree $1 contém submódulo (entrada de gitlink no índice). O git recusa removê-la.
+tem_submodulo() {
+  git -C "$1" ls-files -s 2>/dev/null | awk '$1 == 160000 { achou = 1 } END { exit !achou }'
+}
+
 # 0 se outros usuários podem entrar em $1: todo diretório do caminho tem execução para outros, para
 # o grupo, ou tem ACL (que não se lê aqui, então conta como alcance). Se um diretório não tem nada
 # disso, nenhum outro usuário passa por ele. Erro de stat conta como alcance.
@@ -461,6 +466,9 @@ remover_worktree() {
   sujo=$(pendentes_worktree "$alvo" | wc -l | tr -d ' ')
   if [ "$sujo" != "0" ]; then
     recusar worktree "$alvo" "alterações pendentes ($sujo)"; return 1
+  fi
+  if tem_submodulo "$alvo"; then
+    recusar worktree "$alvo" "contém submódulo: procedimento em docs/PROCESSO.md (Worktrees e branches), com confirmação"; return 1
   fi
   if [ "$(agent_pendente "$alvo")" != "0" ]; then
     recusar worktree "$alvo" "registro .agent com $(agent_pendente "$alvo") arquivo(s) não versionado(s)"; return 1
@@ -688,13 +696,16 @@ for repo in "${UNICOS[@]}"; do
       tamanho=$(du -sh "$caminho" 2>/dev/null | cut -f1)
       if [ "$branch" = "DETACHED" ]; then
         ref=$(git -C "$caminho" rev-parse HEAD 2>/dev/null)
-        if [ "$sujo" -eq 0 ] && git -C "$repo" merge-base --is-ancestor "$ref" "$base_ref" 2>/dev/null; then
+        if [ "$sujo" -eq 0 ] && ! tem_submodulo "$caminho" && git -C "$repo" merge-base --is-ancestor "$ref" "$base_ref" 2>/dev/null; then
           REMOVIVEIS+=("$caminho")
           LISTA_APROVACAO+=("$(printf 'SEGURO_REMOVER\tworktree\t%s\t%s' "$repo" "$caminho")")
           echo "  SEGURO_REMOVER: worktree $caminho (HEAD solto já integrado, limpa, libera $(espaco_liberavel "$caminho"))"
           aviso_store "$caminho"
         else
           echo "  REQUER_DECISAO: worktree $caminho (HEAD solto, alterações pendentes: $sujo, $tamanho)"
+          if tem_submodulo "$caminho"; then
+            echo "    SUBMODULO: a worktree contém submódulo. Use o procedimento de docs/PROCESSO.md (Worktrees e branches), com confirmação."
+          fi
         fi
         continue
       fi
@@ -704,13 +715,16 @@ for repo in "${UNICOS[@]}"; do
       elif [ "$(integrada_por_squash "$slug" "$branch" "$(git -C "$caminho" rev-parse HEAD 2>/dev/null)")" = "SIM" ]; then
         integrada=1
       fi
-      if [ "$integrada" -eq 1 ] && [ "$sujo" -eq 0 ]; then
+      if [ "$integrada" -eq 1 ] && [ "$sujo" -eq 0 ] && ! tem_submodulo "$caminho"; then
         REMOVIVEIS+=("$caminho")
         LISTA_APROVACAO+=("$(printf 'SEGURO_REMOVER\tworktree\t%s\t%s' "$repo" "$caminho")")
         echo "  SEGURO_REMOVER: worktree $caminho (branch $branch integrada, limpa, libera $(espaco_liberavel "$caminho"))"
         aviso_store "$caminho"
       else
         echo "  REQUER_DECISAO: worktree $caminho (branch $branch, integrada: $integrada, alterações pendentes: $sujo, $tamanho)"
+        if tem_submodulo "$caminho"; then
+          echo "    SUBMODULO: a worktree contém submódulo. Use o procedimento de docs/PROCESSO.md (Worktrees e branches), com confirmação."
+        fi
         detalhar_pendentes "$repo" "$slug" "$caminho" "$branch"
       fi
   done < <(listar_worktrees "$repo")

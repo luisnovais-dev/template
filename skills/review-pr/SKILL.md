@@ -16,14 +16,14 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 
 ## Procedimento (modo review)
 
-1. Leia integralmente a issue, a Spec aprovada e a descrição da PR, incluindo as seções Documentação e Roteiro de aceite manual.
+1. Leia integralmente a issue, com a Spec no corpo, e a descrição da PR, incluindo as seções Documentação e Roteiro de aceite manual.
 2. Inspecione o diff completo contra a base.
 3. Leia o código relacionado ao diff para entender o contexto, não só as linhas alteradas.
 4. Examine os testes existentes e os alterados. Verifique se o teste comprova o comportamento alegado, não apenas se existe.
 5. Leia `AGENTS.md` e `docs/PROCESSO.md`.
 6. Avalie: correção funcional, aderência à issue e à Spec, critérios de aceite, invariantes, regressões, edge cases, validação de entrada, autorização por perfil, isolamento entre clientes, tratamento de erros, segurança (incluindo os Requisitos de Segurança declarados e as justificativas de "não aplicável"), concorrência, consistência frontend e backend, persistência e restauração de estado, consistência de renderização entre servidor e cliente quando aplicável, qualidade da API, arquitetura, duplicação, complexidade, performance e consultas, acessibilidade pertinente, testes ausentes ou frágeis, falsos positivos, alterações fora de escopo, alterações de esquema ou de dados não previstas, compatibilidade, e a documentação (se a seção da PR corresponde ao que mudou).
-7. Se a PR fecha um épico, confirme que a suíte de aceite do épico está ativada e verde na branch.
-8. Se a mudança alterar interface, confirme a evidência do ciclo visual (capturas, autoavaliação e roteiro). Sua ausência é finding bloqueante.
+7. Se a PR fecha um épico, confirme que os casos E2E do épico estão ativos e verdes na branch.
+8. Se a mudança alterar interface, confirme a evidência do ciclo visual (capturas das superfícies declaradas, autoavaliação e roteiro). Sua ausência é finding bloqueante. Uma captura que não foi anexada à PR por falha de anexo, com o registro da pendência, não é finding bloqueante.
 9. Não assuma que o relatório do implementador está correto. Confronte com código, diff e testes.
 
 ## Classificação

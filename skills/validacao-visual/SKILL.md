@@ -1,11 +1,11 @@
 ---
 name: validacao-visual
-description: Valida visualmente uma mudança de interface (UX/UI) dentro do ticket, com captura desktop e mobile, autoavaliação contra o inventário visual da Spec, correção, E2E do fluxo e aceite humano. Use quando a mudança alterar telas, componentes visuais ou estilos.
+description: Valida visualmente uma mudança de interface (UX/UI) dentro do ticket, com captura nas superfícies do produto (`visual_superficies`), autoavaliação contra o inventário visual da Spec, correção, E2E do fluxo e aceite humano. Use quando a mudança alterar telas, componentes visuais ou estilos.
 ---
 
 # Validação visual
 
-Confirma que a interface alterada cumpre o contrato visual da Spec. Faz parte do ticket, não é um ticket separado. Sem a evidência deste ciclo, a auditoria bloqueia o ticket.
+Confirma que a interface alterada cumpre o contrato visual da Spec. Faz parte do ticket, não é um ticket separado. Sem a evidência deste ciclo, a verificação final de `implementar-spec` bloqueia o ticket.
 
 ## Entrada
 
@@ -23,14 +23,14 @@ Confirma que a interface alterada cumpre o contrato visual da Spec. Faz parte do
 ## Procedimento
 
 1. Identifique as telas afetadas a partir do diff e das rotas do projeto.
-2. Capture em DEV sempre que a tela mostrar dado pessoal. Captura em STAGING só com a conta de teste do sandbox e sem dado pessoal visível. Para cada tela, capture em duas larguras: desktop (1280 px) e mobile (390 px). Use a ferramenta configurada em `visual` na Configuração. Se for `manual`, capture à mão e anexe.
+2. Capture em DEV sempre que a tela mostrar dado pessoal. Captura em STAGING só com a conta de teste do sandbox e sem dado pessoal visível. Para cada tela, capture nas superfícies listadas em `visual_superficies` na Configuração: `desktop` (1280 px) e `mobile` (390 px). A largura desktop só entra se a chave a listar. Se a chave estiver vazia ou com placeholder, pergunte ao mantenedor antes de capturar. Use a ferramenta configurada em `visual` na Configuração. Se for `manual`, capture à mão e anexe.
 3. Autoavalie cada captura por modelo de visão, comparando com o inventário da Spec. Para cada elemento, registre: conforme, desviado (com o desvio) ou ausente. Estados vazios, de erro e de carregamento entram no inventário.
 4. Corrija os desvios no próprio ticket. Repita as capturas e a autoavaliação até não restar desvio sem justificativa na Spec.
-5. Execute o E2E do fluxo alterado, quando a Configuração o definir.
+5. Execute o E2E do fluxo alterado, quando o ticket tocar a costura com o sistema (ver `docs/PROCESSO.md`, seção Quando um ticket precisa de E2E). O mesmo caso serve de evidência.
 6. Verifique acessibilidade pertinente: contraste, foco visível e rótulos de campos.
 7. Compare com o baseline aprovado, se existir. Se não existir, a captura aprovada vira candidata a baseline.
 8. Apresente as capturas, a autoavaliação e as diferenças ao mantenedor. Ele decide se aceita, se pede ajuste ou se rejeita.
-9. Registre a evidência na PR, com as capturas desktop e mobile anexadas e o resultado da autoavaliação.
+9. Registre a evidência na PR, com as capturas das superfícies declaradas anexadas e o resultado da autoavaliação. Superfície ausente da lista não é capturada e não bloqueia o ticket. Se a captura não puder ser anexada à PR, registre a pendência na PR e siga; o mantenedor pode anexá-la depois do squash.
 
 ## Saída
 
