@@ -41,12 +41,13 @@ A regra de validade de um review está em `docs/PROCESSO.md`, seção Review com
 10. Ao final, execute os testes focados, a integração pertinente, lint nos arquivos alterados, typecheck e build conforme o escopo. Compare com o baseline para detectar regressão nova.
 11. Faça push para a mesma branch com `git push` (sem force).
 12. Responda a cada finding na PR com: causa, correção, teste que reproduziu, teste que comprova a correção e commit correspondente.
+13. Ao final, chame o re-review (`review-pr` em modo re-review) em subagente de contexto novo, sobre o diff novo, sem pedir nova invocação. O re-review devolve o fluxo ao merge gate, ou a nova rodada de `tratar-findings`, conforme `docs/PROCESSO.md` (seção Fluxo após a PR).
 
 ## Saída
 
 - Lista de findings com a correção aplicada ou o motivo de não aplicar.
 - Commits e resultados dos testes.
-- Declaração de que a PR está pronta para re-review.
+- Declaração de que a PR está pronta para re-review, e o resultado do re-review em subagente.
 
 ## Regras
 

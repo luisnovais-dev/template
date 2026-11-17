@@ -18,7 +18,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 
 1. Compare o HEAD revisado pelo último review válido com o HEAD atual da PR. O SHA vem do marcador do review. Se houver commits posteriores, o review anterior não basta: reporte que novo review é necessário.
 2. Leia os reviews nas três fontes (reviews formais, comentários da PR e comentários inline), aplicando a regra de validade de `docs/PROCESSO.md` (seção Review como comentário). Não considere COMMENTED como bloqueio automático.
-3. Confirme que a issue e a Spec correspondem à implementação entregue.
+3. Confirme que a issue, com a Spec no corpo, corresponde à implementação entregue.
 4. Confirme que todos os findings bloqueantes anteriores estão resolvidos e verificados pelo revisor no re-review.
 5. Confirme a documentação: a seção "Documentação" da PR está preenchida, e os documentos citados foram de fato atualizados.
 6. Verifique se a PR é o último ticket filho aberto do épico ao qual pertence ("Parte de #<épico>" na issue). Se for, aplique a seção **Fechamento do épico** de `docs/PROCESSO.md`: os casos E2E do épico precisam estar ativos e verdes na branch integrada, a checklist do épico não pode ter item pendente, e o flag de feature precisa estar tratado. Sem isso, o épico não fecha. Informe "fecha o épico" no resultado. O fechamento em si só ocorre com instrução explícita na invocação.

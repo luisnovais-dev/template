@@ -16,7 +16,7 @@ Antes de agir, confira o estado real da issue e da PR no GitHub, conforme `docs/
 
 ## Procedimento (modo review)
 
-1. Leia integralmente a issue, a Spec aprovada e a descrição da PR, incluindo as seções Documentação e Roteiro de aceite manual.
+1. Leia integralmente a issue, com a Spec no corpo, e a descrição da PR, incluindo as seções Documentação e Roteiro de aceite manual.
 2. Inspecione o diff completo contra a base.
 3. Leia o código relacionado ao diff para entender o contexto, não só as linhas alteradas.
 4. Examine os testes existentes e os alterados. Verifique se o teste comprova o comportamento alegado, não apenas se existe.

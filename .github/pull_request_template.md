@@ -8,7 +8,7 @@ Closes #
 
 ## Spec
 
-<!-- Referência à Spec aprovada e aos itens comentados na issue. Informe as emendas de produto, se houver. -->
+<!-- Referência à Spec no corpo da issue, já completa com os dados da aprovação. Informe as emendas de produto, se houver. -->
 
 ## Implementação
 
