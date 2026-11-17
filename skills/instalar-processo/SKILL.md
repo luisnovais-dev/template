@@ -35,13 +35,19 @@ Instala as skills do processo por máquina, sem copiá-las para os projetos. Os 
    ```bash
    skills/instalar-processo/scripts/instalar.sh --atualizar
    ```
-   A atualização só avança o clone em fast-forward. Se o clone divergir, o script para sem alterar nada.
-7. Se o Hermes estiver instalado e a configuração não listar `~/.agents/skills`, mostre o trecho e peça que o mantenedor o inclua.
+   A atualização só avança o clone em fast-forward. Se o clone divergir, o script para sem alterar nada. Além de criar os links que faltam, `--atualizar` lista os **links órfãos**: links nos destinos que apontam para o clone do template e para uma pasta que não é mais skill de `skills/` (por exemplo, `auditar-spec` depois de sair do processo). Eles aparecem como `Órfão:` no plano.
+7. Para remover os links órfãos listados, com o plano aprovado:
+   ```bash
+   skills/instalar-processo/scripts/instalar.sh --atualizar --aplicar
+   ```
+   Só o link é removido, nunca o destino. Links que apontam para fora do clone, pastas comuns e skills atuais não são tocados.
+8. Se o Hermes estiver instalado e a configuração não listar `~/.agents/skills`, mostre o trecho e peça que o mantenedor o inclua.
 
 ## Saída
 
 - Modo usado e caminho do clone.
 - Links criados, já existentes e pulados por harness ausente.
+- Links órfãos listados (com `--atualizar`) e removidos (com `--atualizar --aplicar`).
 - Conflitos encontrados, se houver.
 - Contagem das skills de fora do processo, por diretório (informativa).
 - Trecho do Hermes, se for necessário.
@@ -56,7 +62,7 @@ Instala as skills do processo por máquina, sem copiá-las para os projetos. Os 
 
 ## Testes
 
-Teste com `HOME` e `ONLUIS_TEMPLATE_DIR` temporários. Nunca rode testes contra o `HOME` real. Verificados: plano sem alteração, aplicação, reexecução sem erro, conflito que para antes de alterar, configuração do Hermes que não muda, e atualização. Não verificado: atualização com clone realmente divergente do remoto (o caminho de falha de fast-forward existe no script, mas não foi exercitado).
+Teste com `HOME` e `ONLUIS_TEMPLATE_DIR` temporários. Nunca rode testes contra o `HOME` real. Verificados: plano sem alteração, aplicação, reexecução sem erro, conflito que para antes de alterar, configuração do Hermes que não muda, e atualização. `tests/orfaos.sh` prova que `--atualizar` lista e `--atualizar --aplicar` remove só o link órfão do clone, e preserva link externo, link quebrado de fora do clone, pasta comum e skill atual. Não verificado: atualização com clone realmente divergente do remoto (o caminho de falha de fast-forward existe no script, mas não foi exercitado).
 
 ## Não faça
 
