@@ -21,10 +21,10 @@ Não há número fixo de tickets por épico, nem estimativa em unidades de tempo
 
 | Etapa | Skill | Entrada | Saída |
 |---|---|---|---|
-| 0. Relato | `relato-para-issue` | Queixa, dor, história ou pedido em linguagem livre | Issue publicada, com capacidade, cenários e tipo (bug, ticket ou épico) |
-| 1. Especificação | `spec-issue` | Issue e código relacionado | Spec, Tasks, Requisitos de Segurança, matriz de rastreabilidade, comentadas na issue |
-| 1a. Aprovação | (humana) | Spec | Aprovação do mantenedor, que registra o label de aprovação, por invocação de `implementar-spec` ou por instrução "spec aceita, registrar" |
-| 2. Implementação e verificação final | `implementar-spec` | Spec aprovada | Commits atômicos na branch da issue, com testes, documentação, validação visual quando houver interface, e a verificação final da Spec (PASS, PARTIAL, FAIL ou NOT TESTED por Requirement, Acceptance Criterion e Task) com o roteiro de aceite manual |
+| 0. Relato | `relato-para-issue` | Queixa, dor, história ou pedido em linguagem livre | Issue publicada com `status:draft`, com capacidade, cenários e tipo (bug, ticket ou épico) |
+| 1. Especificação | `spec-issue` | Issue e código relacionado | Corpo da issue reescrito com a Spec, Tasks, Requisitos de Segurança e matriz de rastreabilidade. A issue segue com `status:draft` |
+| 1a. Aprovação | (humana) | Issue com a Spec no corpo | Aprovação do mantenedor, por invocação de `implementar-spec` ou por instrução "spec aceita, registrar". Troca `status:draft` por `status:approved` e completa o corpo com os dados da Spec |
+| 2. Implementação e verificação final | `implementar-spec` | Issue aprovada (`status:approved`) | Commits atômicos na branch da issue, com testes, documentação, validação visual quando houver interface, e a verificação final da Spec (PASS, PARTIAL, FAIL ou NOT TESTED por Requirement, Acceptance Criterion e Task) com o roteiro de aceite manual |
 | 3. Pull request | `abrir-pr` | Implementação verificada | PR com o template, vinculada à issue. Encadeada à invocação que a autoriza |
 | 4. Review independente | `review-pr` em subagente | PR | Review em contexto novo, com findings classificados e marcador |
 | 4.2. Remediação | `tratar-findings` em subagente | Findings | Correções com TDD e resposta a cada finding |
@@ -43,11 +43,11 @@ A skill para e reporta, sem agir, se a issue estiver fechada, se a PR da branch 
 
 ### Etapa 0: relato para issue
 
-A skill `relato-para-issue` traduz o relato em: pessoa e situação, dor, contorno atual, resultado esperado, capacidade, cenários derivados e tipo. Hipóteses viram pergunta. Temas misturados são separados em issues distintas. Antes de publicar, a busca por duplicatas abertas e fechadas é obrigatória. A issue usa o formulário YAML de `.github/ISSUE_TEMPLATE/`. Uma issue só entra em trabalho depois de aprovada.
+A skill `relato-para-issue` traduz o relato em: pessoa e situação, dor, contorno atual, resultado esperado, capacidade, cenários derivados e tipo. Hipóteses viram pergunta. Temas misturados são separados em issues distintas. Antes de publicar, a busca por duplicatas abertas e fechadas é obrigatória. A issue usa o formulário YAML de `.github/ISSUE_TEMPLATE/`, e é publicada com o label `status:draft`, além do `type:*`. Não é Spec: os campos do relato ficam no corpo da issue, e a Spec é escrita depois, pela `spec-issue`. Uma issue só entra em trabalho depois de aprovada na Etapa 1a.
 
 ### Etapa 1: especificação
 
-A Spec contém requisitos funcionais e não funcionais, comportamento esperado, regras de negócio, decisões técnicas, Requisitos de Segurança aplicáveis, critérios de aceite verificáveis, casos de erro e invariantes. Ela é decomposta em Tasks pequenas e ordenadas, cada uma com objetivo, arquivos, dependências, critérios de conclusão e testes.
+A `spec-issue` reescreve o corpo da issue com a Spec. Ela não comenta a Spec e não aplica label de aprovação: a issue segue com `status:draft` até a Etapa 1a. A Spec contém requisitos funcionais e não funcionais, comportamento esperado, regras de negócio, decisões técnicas, Requisitos de Segurança aplicáveis, critérios de aceite verificáveis, casos de erro e invariantes. Ela é decomposta em Tasks pequenas e ordenadas, cada uma com objetivo, arquivos, dependências, critérios de conclusão e testes.
 
 A Spec só é aprovável no gate **Spec pronta**, verificado pela `spec-issue`:
 
@@ -64,10 +64,10 @@ Quando há fronteira entre front e back, a Spec traz o contrato da interface, co
 
 A aprovação é dada pelo mantenedor, em uma destas duas formas, e em nenhuma outra:
 
-- **por invocação:** o mantenedor chama `implementar-spec` com a Spec. A chamada aprova a Spec e autoriza a implementação. A `implementar-spec` aplica o label de aprovação (`label_aprovacao`) antes de começar;
-- **por instrução:** o mantenedor diz na conversa algo como "spec aceita, registrar". O agente aplica o label, sem implementar. A implementação depende de uma nova invocação de `implementar-spec`.
+- **por invocação:** o mantenedor chama `implementar-spec` com a issue. A chamada aprova a Spec e autoriza a implementação. Antes de começar, a `implementar-spec` troca o label `status:draft` por `status:approved` (`label_aprovacao`) e completa o corpo da issue com os dados da Spec, se ainda não estiverem completos;
+- **por instrução:** o mantenedor diz na conversa algo como "spec aceita, registrar". O agente troca o label por `status:approved` e completa o corpo da issue com os dados da Spec, sem implementar. A implementação depende de uma nova invocação de `implementar-spec`.
 
-Quem comenta a Spec na issue é a `spec-issue`, antes da aprovação, no gate "Spec pronta". Nas duas formas acima a Spec já está comentada: a aprovação só aplica o label, e nenhuma delas comenta a Spec de novo. Se a Spec não estiver comentada na issue, a `implementar-spec` para e reporta, e a instrução "spec aceita, registrar" não basta para aprovar uma Spec que não foi publicada.
+Nas duas formas, a Spec já está no corpo da issue, escrita pela `spec-issue` no gate "Spec pronta". A aprovação não reescreve a Spec: só troca o label e completa o corpo com os dados que faltarem. Se o corpo da issue não contiver a Spec, a `implementar-spec` para e reporta, e a instrução "spec aceita, registrar" não basta para aprovar uma Spec que não foi escrita na issue.
 
 Esse label registra a aprovação da Spec, não da PR.
 
@@ -93,7 +93,7 @@ Se algum item estiver FAIL, a skill corrige na própria rodada e repete a verifi
 
 ### Etapa 3: pull request
 
-A PR usa o template em `.github/pull_request_template.md`. Ela referencia a Spec, lista as Tarefas marcadas apenas quando satisfeitas e registra a verificação com resultados reais. Testes não executados não são marcados como aprovados.
+A PR usa o template em `.github/pull_request_template.md`. Ela referencia a Spec no corpo da issue, lista as Tarefas marcadas apenas quando satisfeitas e registra a verificação com resultados reais. Testes não executados não são marcados como aprovados.
 
 Regras da PR:
 
@@ -130,13 +130,13 @@ O revisor confirma cada finding como RESOLVED, PARTIALLY RESOLVED ou UNRESOLVED,
 
 Depois da invocação que autoriza a PR (ver [Autorização](#autorização)), o fluxo segue sem novo comando até o relatório do merge gate:
 
-1. `review-pr` em subagente de contexto novo, sobre a PR aberta.
-2. Se houver findings, `tratar-findings` em subagente, com um commit por correção.
-3. `review-pr` em modo re-review, em subagente, sobre o diff novo.
-4. Repete os passos 2 e 3 até não restar finding bloqueante nem finding não tratado.
+1. `abrir-pr` cria a PR e chama `review-pr` em subagente de contexto novo, sobre a PR aberta.
+2. Se `review-pr` não encontrar finding, o fluxo segue para `merge-gate`. Se encontrar, chama `tratar-findings`.
+3. `tratar-findings` corrige os findings, com um commit por correção, e chama `review-pr` em modo re-review, em subagente de contexto novo, sobre o diff novo.
+4. O ciclo repete os passos 2 e 3 até não restar finding bloqueante nem finding não tratado.
 5. `merge-gate` gera o relatório.
 
-O fluxo para, e reporta ao mantenedor, quando um finding exige decisão de produto, quando a Spec precisa de emenda, quando um check falha sem causa conhecida, ou quando há conflito com `main`. Não há contorno silencioso. O resultado chega ao mantenedor como relatório único, com o que foi corrigido em cada rodada.
+O mantenedor recebe só o relatório do merge gate, e confirma ou não o squash. O fluxo para, e reporta ao mantenedor, quando um finding exige decisão de produto, quando a Spec precisa de emenda, quando um check falha sem causa conhecida, ou quando há conflito com `main`. Não há contorno silencioso. O relatório chega como documento único, com o que foi corrigido em cada rodada.
 
 ### Etapa 5: merge gate
 
@@ -354,9 +354,10 @@ Texto da organização em pt-BR. Identificadores (código, pastas, tokens, chave
 
 - **A autorização vale para a invocação.** Quem invoca uma skill com a ação explícita já autorizou aquela ação.
 - **Única exceção permanente:** a matriz de ambientes da Configuração. Uma célula marcada como `sim` dispensa nova autorização para a ação correspondente, naquele ambiente. Nenhuma outra configuração versionada concede autorização. Produção nunca é pré-autorizada.
-- **Ações que exigem instrução explícita na invocação:** publicar issue, publicar comentário, criar ou alterar label, fechar épico, apagar branch remota ou local, remover worktree, remover arquivos, qualquer ação em produção e qualquer deploy fora da matriz.
-- **Encadeamento da etapa 3 em diante:** a invocação de `implementar-spec` que pede a PR autoriza a abertura da PR, o review, o tratamento de findings e o re-review, sem nova invocação. Não autoriza o squash, que exige a confirmação do mantenedor sobre o relatório do merge gate.
-- **Aprovação da Spec:** o label `status:approved` é autorizado pela invocação de `implementar-spec` com a Spec, ou pela instrução "spec aceita, registrar" (ver [Etapa 1a](#etapa-1a-aprovação)).
+- **Ações que exigem instrução explícita na invocação:** publicar issue, publicar comentário, criar label, alterar label (exceto `status:draft` e `status:approved`, ver abaixo), fechar épico, apagar branch remota ou local, remover worktree, remover arquivos, qualquer ação em produção e qualquer deploy fora da matriz.
+- **Encadeamento da etapa 3 em diante:** a invocação de `abrir-pr`, direta ou por `implementar-spec` que pede a PR, autoriza a abertura da PR e o encadeamento até o relatório do merge gate: review, `tratar-findings` e re-review, sem nova invocação. Não autoriza o squash, que exige a confirmação do mantenedor sobre o relatório do merge gate.
+- **Spec na issue:** a invocação de `spec-issue` autoriza reescrever o corpo da issue com a Spec. O label `status:draft` é aplicado pela publicação da issue, autorizada pela invocação de `relato-para-issue`.
+- **Aprovação da Spec:** o label `status:approved` é autorizado pela invocação de `implementar-spec` com a issue, ou pela instrução "spec aceita, registrar" (ver [Etapa 1a](#etapa-1a-aprovação)). Essa aprovação também troca `status:draft` por `status:approved` e completa o corpo da issue.
 - **Bypass de proteção de branch ou de checks obrigatórios** só acontece com autorização explícita do mantenedor na própria invocação, e somente se a plataforma oferecer esse mecanismo ao usuário. O agente não contorna proteção por conta própria.
 - **O bypass administrativo nunca cobre** checks obrigatórios, conflitos, achados pendentes ou mudanças destrutivas.
 - Uma etapa autorizada é executada até o fim, sem pausas por cautela, exceto por bloqueio real (decisão que a Spec não cobre).
@@ -391,7 +392,8 @@ REVIEW STATUS: <estado>
 Os nomes, cores e descrições dos labels estão em `.github/labels.yml`, que é a fonte única desse conjunto. Este documento define as regras de uso:
 
 - Cada PR tem exatamente um `type:*`.
-- `status:approved` registra a aprovação da Spec, somente nas situações da [Etapa 1a](#etapa-1a-aprovação). Nunca aprova a PR.
+- `status:draft` marca a issue enquanto a Spec está em elaboração. Sai na aprovação.
+- `status:approved` registra a aprovação da Spec, somente nas situações da [Etapa 1a](#etapa-1a-aprovação), e entra no lugar de `status:draft`. Nunca aprova a PR.
 - `size:exception` é opcional: registra que a PR passou do teto de orientação, com justificativa na descrição.
 - `duplicate`, `invalid` e `wontfix` fazem parte do conjunto final e não são removidos pela normalização.
 - Labels não são criados nem alterados no GitHub sem instrução explícita na invocação.
