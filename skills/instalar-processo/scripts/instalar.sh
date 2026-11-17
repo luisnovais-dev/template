@@ -156,7 +156,7 @@ done
 # 3b. Links órfãos (só com --atualizar): link nos destinos que aponta para uma pasta do clone
 # que não é mais skill do processo. Listados sempre; removidos só com --aplicar. Link de fora
 # do clone e pasta comum não são tocados.
-if [ "$ATUALIZAR" -eq 1 ] && [ -n "$FONTE" ]; then
+if [ "$ATUALIZAR" -eq 1 ] && [ -n "$FONTE" ] && [ -n "$SKILLS" ]; then
   FONTE_REAL=$(readlink -f "$FONTE")
   for destino in "$DEST_AGENTS" "$DEST_CLAUDE"; do
     [ -d "$destino" ] || continue

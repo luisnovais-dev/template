@@ -35,7 +35,7 @@ Instala as skills do processo por máquina, sem copiá-las para os projetos. Os 
    ```bash
    skills/instalar-processo/scripts/instalar.sh --atualizar
    ```
-   A atualização só avança o clone em fast-forward. Se o clone divergir, o script para sem alterar nada. Além de criar os links que faltam, `--atualizar` lista os **links órfãos**: links nos destinos que apontam para o clone do template e para uma pasta que não é mais skill de `skills/` (por exemplo, `auditar-spec` depois de sair do processo). Eles aparecem como `Órfão:` no plano.
+   A atualização só avança o clone em fast-forward. Se o clone divergir, o script para sem alterar nada. Além de criar os links que faltam, `--atualizar` lista os **links órfãos**: links nos destinos que apontam para o clone do template e para uma pasta que não é mais skill de `skills/` (por exemplo, uma skill que saiu do processo). Eles aparecem como `Órfão:` no plano.
 7. Para remover os links órfãos listados, com o plano aprovado:
    ```bash
    skills/instalar-processo/scripts/instalar.sh --atualizar --aplicar
