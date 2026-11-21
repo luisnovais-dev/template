@@ -10,8 +10,8 @@
 #   instalar.sh --atualizar --aplicar   o mesmo, e remove os links órfãos listados
 #
 # Variáveis (para testes e outras máquinas):
-#   ONLUIS_TEMPLATE_DIR   clone do instalador (padrão: $HOME/.local/share/onluis-dev/template)
-#   ONLUIS_TEMPLATE_REPO  URL do template (padrão: https://github.com/onluis-dev/template.git)
+#   ONLUIS_TEMPLATE_DIR   clone do instalador (padrão: $HOME/.local/share/luisnovais-dev/template)
+#   ONLUIS_TEMPLATE_REPO  URL do template (padrão: https://github.com/luisnovais-dev/template.git)
 #   ONLUIS_TEMPLATE_REF   referência remota (padrão: origin/main)
 #
 # Destinos: $HOME/.agents/skills (Codex, OpenCode, Hermes) e $HOME/.claude/skills (Claude).
@@ -40,8 +40,8 @@ elif [ "$APLICAR" -eq 1 ]; then
   MODO="aplicar"
 fi
 
-CLONE="${ONLUIS_TEMPLATE_DIR:-$HOME/.local/share/onluis-dev/template}"
-REPO="${ONLUIS_TEMPLATE_REPO:-https://github.com/onluis-dev/template.git}"
+CLONE="${ONLUIS_TEMPLATE_DIR:-$HOME/.local/share/luisnovais-dev/template}"
+REPO="${ONLUIS_TEMPLATE_REPO:-https://github.com/luisnovais-dev/template.git}"
 REF="${ONLUIS_TEMPLATE_REF:-origin/main}"
 DEST_AGENTS="$HOME/.agents/skills"
 DEST_CLAUDE="$HOME/.claude/skills"

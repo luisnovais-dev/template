@@ -2,7 +2,7 @@
 
 <!-- Uma linha: o que o projeto faz e para quem. -->
 
-Este é um repositório de template para padronização dos projetos da organização [@onluis-dev](https://github.com/onluis-dev). Ele reúne regras de processo, skills e modelos de issue e PR, sem código de sistema. O README deste repositório será escrito conforme o projeto a ser desenvolvido a partir dele.
+Este é um repositório de template para padronização dos projetos da organização [@luisnovais-dev](https://github.com/luisnovais-dev). Ele reúne regras de processo, skills e modelos de issue e PR, sem código de sistema. O README deste repositório será escrito conforme o projeto a ser desenvolvido a partir dele.
 
 ## Documentação
 
@@ -20,9 +20,9 @@ As skills são instaladas por máquina, por links, e não copiadas para os proje
 ### Primeira instalação
 
 ```bash
-gh repo clone onluis-dev/template ~/.local/share/onluis-dev/template
-~/.local/share/onluis-dev/template/skills/instalar-processo/scripts/instalar.sh
-~/.local/share/onluis-dev/template/skills/instalar-processo/scripts/instalar.sh --aplicar
+gh repo clone luisnovais-dev/template ~/.local/share/luisnovais-dev/template
+~/.local/share/luisnovais-dev/template/skills/instalar-processo/scripts/instalar.sh
+~/.local/share/luisnovais-dev/template/skills/instalar-processo/scripts/instalar.sh --aplicar
 ```
 
 O primeiro comando de instalação mostra o plano e não altera nada. O `--aplicar` cria os links em `~/.agents/skills` e `~/.claude/skills`.
@@ -32,7 +32,7 @@ Se o `git` pedir usuário e senha ao clonar ou atualizar, rode uma vez, por máq
 ### Atualização
 
 ```bash
-~/.local/share/onluis-dev/template/skills/instalar-processo/scripts/instalar.sh --atualizar
+~/.local/share/luisnovais-dev/template/skills/instalar-processo/scripts/instalar.sh --atualizar
 ```
 
 O comando avança o clone em fast-forward e reaplica os links. Se o clone tiver divergido, ele para sem alterar nada, e a resolução é manual.
@@ -71,7 +71,7 @@ Cada item é revalidado antes de ser removido. O modo mostra `REMOVIDO:` ou `REC
 Para inventariar outra máquina, sem copiar nada para lá:
 
 ```bash
-ssh <host> 'bash -s' < ~/.local/share/onluis-dev/template/skills/higiene-maquina/scripts/inventario.sh
+ssh <host> 'bash -s' < ~/.local/share/luisnovais-dev/template/skills/higiene-maquina/scripts/inventario.sh
 ```
 
 ### Hermes

@@ -14,7 +14,7 @@ Instala as skills do processo por máquina, sem copiá-las para os projetos. Os 
 
 ## Caminhos
 
-- Clone do instalador: `~/.local/share/onluis-dev/template` (configurável por `ONLUIS_TEMPLATE_DIR`). É um clone separado. Não é o checkout de trabalho do template, que muda de branch.
+- Clone do instalador: `~/.local/share/luisnovais-dev/template` (configurável por `ONLUIS_TEMPLATE_DIR`). É um clone separado. Não é o checkout de trabalho do template, que muda de branch.
 - Destinos: `~/.agents/skills` (Codex, OpenCode e Hermes) e `~/.claude/skills` (Claude). Cada skill é um link para `skills/<nome>` do clone.
 - Hermes: `~/.hermes/config.yaml` precisa listar `~/.agents/skills` em `skills.external_dirs`. O instalador nunca altera esse arquivo; só mostra o trecho a incluir.
 

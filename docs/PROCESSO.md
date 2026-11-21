@@ -457,7 +457,7 @@ As etapas do processo são executadas por skills. Há duas classes:
 
 A adoção nunca remove uma skill própria do projeto. Uma skill própria com o mesmo nome de uma skill do processo é conflito, e vai para decisão do mantenedor.
 
-Se as skills não estiverem disponíveis no ambiente de execução (por exemplo, numa sessão na nuvem), leia o procedimento em `skills/<nome>/SKILL.md` no repositório do template, `onluis-dev/template`, antes de executar a etapa. Não invente o procedimento a partir da memória.
+Se as skills não estiverem disponíveis no ambiente de execução (por exemplo, numa sessão na nuvem), leia o procedimento em `skills/<nome>/SKILL.md` no repositório do template, `luisnovais-dev/template`, antes de executar a etapa. Não invente o procedimento a partir da memória.
 
 ## Configuração
 
@@ -472,7 +472,7 @@ label_aprovacao: status:approved
 label_excecao_tamanho: size:exception
 teto_pr_linhas: 2000
 visual_superficies: <!-- [desktop, mobile], [mobile] ou [desktop], conforme as superfícies do produto -->
-raiz_aposentados: ~/.local/share/onluis-dev/aposentados
+raiz_aposentados: ~/.local/share/luisnovais-dev/aposentados
 env_check: <!-- comando que confere as chaves do .env sem exibir valores, ou vazio -->
 comandos:
   lint: <!-- comando de lint -->

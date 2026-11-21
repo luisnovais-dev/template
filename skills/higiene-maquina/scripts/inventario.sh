@@ -6,7 +6,7 @@
 #   resíduos (scratch-*, *snapshot*) até 2 níveis abaixo de $HOME.
 #
 # Variáveis:
-#   HIGIENE_DONOS  donos de remoto reconhecidos, separados por espaço (ex.: "onluis-dev luisnovais-dev").
+#   HIGIENE_DONOS  donos de remoto reconhecidos, separados por espaço (ex.: "luisnovais-dev outra-org").
 #                  Remoto de dono fora dessa lista vira REMOTO_LEGADO para revisão.
 #   HIGIENE_REGENERAVEIS  pastas ignoradas que não bloqueiam a remoção de worktree, separadas por espaço.
 #                  Padrão: "node_modules .next dist coverage .venv". Pasta fora dessa lista e ignorada
@@ -72,7 +72,7 @@ GH_USUARIO=""
 if command -v gh >/dev/null 2>&1; then
   GH_USUARIO=$(gh api user --jq .login 2>/dev/null || true)
 fi
-# Organizações do usuário também são donos reconhecidos (ex.: onluis-dev).
+# Organizações do usuário também são donos reconhecidos (ex.: luisnovais-dev).
 GH_ORGS=""
 if [ -n "$GH_USUARIO" ]; then
   GH_ORGS=$(gh api user/orgs --jq '.[].login' 2>/dev/null | tr '\n' ' ' || true)
